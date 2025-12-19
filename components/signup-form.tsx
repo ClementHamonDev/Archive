@@ -16,26 +16,52 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const signInWithEmailHandler = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return false;
+    }
+    if (!email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
+
+  const signUpWithEmailHandler = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
 
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
     try {
-      const result = await authClient.signIn.email({
+      const result = await authClient.signUp.email({
         email,
         password,
+        name,
       });
 
       if (result.error) {
-        setError(result.error.message || "Login failed");
+        setError(result.error.message || "Sign up failed");
       } else {
         router.push("/home");
       }
@@ -46,7 +72,7 @@ export function LoginForm() {
     }
   };
 
-  const signInWithGithubHandler = async () => {
+  const signUpWithGithubHandler = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -55,7 +81,7 @@ export function LoginForm() {
         provider: "github",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "GitHub login failed");
+      setError(err instanceof Error ? err.message : "GitHub sign up failed");
     } finally {
       setIsLoading(false);
     }
@@ -65,8 +91,8 @@ export function LoginForm() {
     <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome</CardTitle>
-          <CardDescription>Login to your account</CardDescription>
+          <CardTitle className="text-xl">Create Account</CardTitle>
+          <CardDescription>Sign up to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -77,8 +103,23 @@ export function LoginForm() {
               </div>
             )}
 
-            {/* Email Login Form */}
-            <form onSubmit={signInWithEmailHandler} className="space-y-4">
+            {/* Email Signup Form */}
+            <form onSubmit={signUpWithEmailHandler} className="space-y-4">
+              <FieldGroup>
+                <Field>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </Field>
+              </FieldGroup>
+
               <FieldGroup>
                 <Field>
                   <Label htmlFor="email">Email</Label>
@@ -109,8 +150,23 @@ export function LoginForm() {
                 </Field>
               </FieldGroup>
 
+              <FieldGroup>
+                <Field>
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </Field>
+              </FieldGroup>
+
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login with Email"}
+                {isLoading ? "Creating account..." : "Sign up with Email"}
               </Button>
             </form>
 
@@ -124,17 +180,17 @@ export function LoginForm() {
               </div>
             </div>
 
-            {/* GitHub Login */}
+            {/* GitHub Signup */}
             <FieldGroup>
               <Field>
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={signInWithGithubHandler}
+                  onClick={signUpWithGithubHandler}
                   disabled={isLoading}
                   className="w-full"
                 >
-                  {isLoading ? "Logging in..." : "Login with GitHub"}
+                  {isLoading ? "Signing up..." : "Sign up with GitHub"}
                 </Button>
               </Field>
             </FieldGroup>
@@ -142,11 +198,11 @@ export function LoginForm() {
         </CardContent>
       </Card>
 
-      {/* Sign Up Link */}
+      {/* Login Link */}
       <div className="text-center text-sm">
-        Don't have an account?{" "}
-        <a href="/signup" className="text-primary hover:underline">
-          Sign up
+        Already have an account?{" "}
+        <a href="/login" className="text-primary hover:underline">
+          Login
         </a>
       </div>
     </div>
