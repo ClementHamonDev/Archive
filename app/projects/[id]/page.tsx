@@ -1,4 +1,5 @@
 import { Header } from "@/components/header";
+import { DeleteProjectDialog } from "@/components/delete-project-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,6 @@ import {
   Play,
   RotateCcw,
   Tag,
-  Trash2,
   AlertTriangle,
   Lightbulb,
   Eye,
@@ -188,18 +188,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Edit className="h-4 w-4" />
-                      Modifier
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-destructive hover:text-destructive"
+                      className="gap-2"
+                      asChild
                     >
-                      <Trash2 className="h-4 w-4" />
-                      Supprimer
+                      <Link href={`/projects/${project.id}/edit`}>
+                        <Edit className="h-4 w-4" />
+                        Modifier
+                      </Link>
                     </Button>
+                    <DeleteProjectDialog
+                      projectId={project.id}
+                      projectName={project.name}
+                    />
                   </div>
                 </div>
               </CardHeader>
