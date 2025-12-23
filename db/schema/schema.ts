@@ -134,3 +134,30 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   abandonment: one(projectAbandonments),
   revivals: many(projectRevivals),
 }));
+
+export const projectTagsRelations = relations(projectTags, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectTags.projectId],
+    references: [projects.id],
+  }),
+}));
+
+export const projectAbandonmentsRelations = relations(
+  projectAbandonments,
+  ({ one }) => ({
+    project: one(projects, {
+      fields: [projectAbandonments.projectId],
+      references: [projects.id],
+    }),
+  }),
+);
+
+export const projectRevivalsRelations = relations(
+  projectRevivals,
+  ({ one }) => ({
+    project: one(projects, {
+      fields: [projectRevivals.projectId],
+      references: [projects.id],
+    }),
+  }),
+);

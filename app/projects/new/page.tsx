@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Archive,
   ArrowLeft,
@@ -29,21 +30,19 @@ import {
   EyeOff,
   Github,
   Globe,
-  Image as ImageIcon,
   Link2,
+  Loader2,
   Plus,
   Save,
   Tag,
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { createProject } from "@/lib/actions/projects";
+import { authClient } from "@/lib/auth-client";
 
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  image: "https://github.com/shadcn.png",
-};
 const suggestedTags = [
   "React",
   "Next.js",
@@ -53,180 +52,269 @@ const suggestedTags = [
   "Vue.js",
   "Tailwind",
   "PostgreSQL",
+  "MongoDB",
+  "GraphQL",
 ];
 
 export default function NewProjectPage() {
+  const router = useRouter();
+  const { data: session, isPending: isSessionPending } =
+    authClient.useSession();
+  const [isPending, startTransition] = useTransition();
+
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [visibility, setVisibility] = useState("private");
+  const [isPublic, setIsPublic] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const user = session?.user
+    ? {
+        name: session.user.name || "User",
+        email: session.user.email || "",
+        image: session.user.image || undefined,
+      }
+    : null;
 
   const addTag = (tag: string) => {
-    if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 10) {
+      setTags([...tags, trimmedTag]);
       setTagInput("");
     }
   };
+
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const status = (formData.get("status") as string) || "ACTIVE";
+    const startDate = formData.get("startDate") as string;
+    const repositoryUrl = formData.get("repositoryUrl") as string;
+    const liveUrl = formData.get("liveUrl") as string;
+
+    startTransition(async () => {
+      const result = await createProject({
+        name,
+        description: description || null,
+        status: status as "ACTIVE" | "COMPLETED" | "ABANDONED",
+        startDate: new Date(startDate),
+        isPublic,
+        tags,
+        repositoryUrl: repositoryUrl || null,
+        liveUrl: liveUrl || null,
+      });
+
+      if (result.success) {
+        router.push(`/projects/${result.data.id}`);
+      } else {
+        setError(result.error);
+      }
+    });
+  };
+
+  if (isSessionPending) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    router.push("/login");
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <Header user={mockUser} isAuthenticated={true} />
+      <Header user={user!} isAuthenticated={true} />
+
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <Link
           href="/projects"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Projects
+          Retour aux projets
         </Link>
+
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Create New Project</h1>
+          <h1 className="text-3xl font-bold mb-2">Nouveau projet</h1>
           <p className="text-muted-foreground">
-            Add a new project to your archive.
+            Ajoutez un nouveau projet à votre archive.
           </p>
         </div>
-        <form className="space-y-8">
+
+        {error && (
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Information */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Archive className="h-5 w-5" />
-                Basic Information
+                Informations générales
               </CardTitle>
               <CardDescription>
-                Essential details about your project
+                Les détails essentiels de votre projet
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Project Name *</Label>
-                <Input id="name" placeholder="My Awesome Project" required />
+                <Label htmlFor="name">Nom du projet *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="Mon super projet"
+                  required
+                  disabled={isPending}
+                />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe your project..."
+                  name="description"
+                  placeholder="Décrivez votre projet..."
                   rows={4}
-                  required
+                  disabled={isPending}
                 />
               </div>
+
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select defaultValue="ACTIVE">
+                  <Label htmlFor="status">Statut</Label>
+                  <Select
+                    name="status"
+                    defaultValue="ACTIVE"
+                    disabled={isPending}
+                  >
                     <SelectTrigger id="status">
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder="Sélectionner un statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
-                      <SelectItem value="ABANDONED">Abandoned</SelectItem>
+                      <SelectItem value="ACTIVE">Actif</SelectItem>
+                      <SelectItem value="COMPLETED">Terminé</SelectItem>
+                      <SelectItem value="ABANDONED">Abandonné</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="visibility">Visibility</Label>
-                  <Select value={visibility} onValueChange={setVisibility}>
-                    <SelectTrigger id="visibility">
-                      <SelectValue placeholder="Select visibility" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">
-                        <span className="flex items-center gap-2">
-                          <EyeOff className="h-4 w-4" />
-                          Private
-                        </span>
-                      </SelectItem>
-                      <SelectItem value="public">
-                        <span className="flex items-center gap-2">
-                          <Eye className="h-4 w-4" />
-                          Public
-                        </span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label
+                    htmlFor="startDate"
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Date de début *
+                  </Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    defaultValue={new Date().toISOString().split("T")[0]}
+                    required
+                    disabled={isPending}
+                  />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="startDate" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Start Date
-                </Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  defaultValue={new Date().toISOString().split("T")[0]}
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label
+                    htmlFor="visibility"
+                    className="flex items-center gap-2"
+                  >
+                    {isPublic ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
+                    )}
+                    Visibilité
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isPublic
+                      ? "Visible publiquement"
+                      : "Visible uniquement par vous"}
+                  </p>
+                </div>
+                <Switch
+                  id="visibility"
+                  checked={isPublic}
+                  onCheckedChange={setIsPublic}
+                  disabled={isPending}
                 />
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
-                Media
-              </CardTitle>
-              <CardDescription>Add a thumbnail image</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  Drag and drop an image, or click to browse
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-4"
-                  type="button"
-                >
-                  Choose File
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
+          {/* Links */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Link2 className="h-5 w-5" />
-                Links
+                Liens
               </CardTitle>
-              <CardDescription>Repository and live URLs</CardDescription>
+              <CardDescription>
+                URLs du dépôt et du site en ligne
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="repoUrl" className="flex items-center gap-2">
+                <Label
+                  htmlFor="repositoryUrl"
+                  className="flex items-center gap-2"
+                >
                   <Github className="h-4 w-4" />
-                  Repository URL
+                  URL du dépôt
                 </Label>
                 <Input
-                  id="repoUrl"
+                  id="repositoryUrl"
+                  name="repositoryUrl"
                   type="url"
                   placeholder="https://github.com/username/project"
+                  disabled={isPending}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="liveUrl" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  Live URL
+                  URL du site
                 </Label>
                 <Input
                   id="liveUrl"
+                  name="liveUrl"
                   type="url"
-                  placeholder="https://myproject.com"
+                  placeholder="https://monprojet.com"
+                  disabled={isPending}
                 />
               </div>
             </CardContent>
           </Card>
+
+          {/* Tags */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5" />
                 Tags
               </CardTitle>
-              <CardDescription>Categorize your project</CardDescription>
+              <CardDescription>
+                Catégorisez votre projet (max. 10 tags)
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {tags.length > 0 && (
@@ -238,6 +326,7 @@ export default function NewProjectPage() {
                         type="button"
                         onClick={() => removeTag(tag)}
                         className="ml-1 hover:text-destructive"
+                        disabled={isPending}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -245,60 +334,87 @@ export default function NewProjectPage() {
                   ))}
                 </div>
               )}
+
               <div className="flex gap-2">
                 <Input
-                  placeholder="Add a tag..."
+                  placeholder="Ajouter un tag..."
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      addTag(tagInput.trim());
+                      addTag(tagInput);
                     }
                   }}
+                  disabled={isPending || tags.length >= 10}
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => addTag(tagInput.trim())}
+                  onClick={() => addTag(tagInput)}
+                  disabled={isPending || tags.length >= 10}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Suggested:</p>
-                <div className="flex flex-wrap gap-2">
-                  {suggestedTags
-                    .filter((tag) => !tags.includes(tag))
-                    .map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-accent"
-                        onClick={() => addTag(tag)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        {tag}
-                      </Badge>
-                    ))}
+
+              {suggestedTags.filter((tag) => !tags.includes(tag)).length >
+                0 && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Suggestions :
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedTags
+                      .filter((tag) => !tags.includes(tag))
+                      .slice(0, 8)
+                      .map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={() => !isPending && addTag(tag)}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
+
           <Separator />
+
+          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-end">
             <Link href="/projects">
               <Button
                 variant="outline"
                 type="button"
                 className="w-full sm:w-auto"
+                disabled={isPending}
               >
-                Cancel
+                Annuler
               </Button>
             </Link>
-            <Button type="submit" className="gap-2 w-full sm:w-auto">
-              <Save className="h-4 w-4" />
-              Create Project
+            <Button
+              type="submit"
+              className="gap-2 w-full sm:w-auto"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Créer le projet
+                </>
+              )}
             </Button>
           </div>
         </form>

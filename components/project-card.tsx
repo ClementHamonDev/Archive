@@ -33,10 +33,10 @@ import Image from "next/image";
 
 export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ABANDONED";
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   status: ProjectStatus;
   thumbnail?: string;
   tags?: string[];

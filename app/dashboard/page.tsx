@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSession } from "@/lib/auth";
+import { getProjects, getProjectStats } from "@/lib/actions/projects";
 import { redirect } from "next/navigation";
 import {
   Activity,
@@ -22,65 +23,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-
-// Mock data - à remplacer par les vraies données
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  image: "https://github.com/shadcn.png",
-};
-
-const mockProjects = [
-  {
-    id: "1",
-    name: "E-commerce Platform",
-    description: "A full-featured e-commerce platform with React and Node.js",
-    status: "ACTIVE" as ProjectStatus,
-    thumbnail:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800",
-    tags: ["React", "Node.js", "MongoDB"],
-    repoUrl: "https://github.com",
-    liveUrl: "https://example.com",
-    startDate: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Task Management App",
-    description: "A Kanban-style task management application",
-    status: "COMPLETED" as ProjectStatus,
-    tags: ["Next.js", "Prisma", "PostgreSQL"],
-    repoUrl: "https://github.com",
-    startDate: "2023-08-01",
-    endDate: "2023-12-15",
-  },
-  {
-    id: "3",
-    name: "Weather Dashboard",
-    description: "Real-time weather data visualization dashboard",
-    status: "ABANDONED" as ProjectStatus,
-    tags: ["Vue.js", "D3.js"],
-    startDate: "2024-03-01",
-    abandonedDate: "2024-05-15",
-  },
-  {
-    id: "4",
-    name: "Portfolio Website",
-    description: "Personal portfolio showcasing projects and skills",
-    status: "ACTIVE" as ProjectStatus,
-    thumbnail:
-      "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800",
-    tags: ["Astro", "Tailwind"],
-    repoUrl: "https://github.com",
-    startDate: "2024-06-01",
-  },
-];
-
-const recentActivity = [
-  { type: "created", project: "Portfolio Website", date: "2 hours ago" },
-  { type: "completed", project: "Task Management App", date: "3 days ago" },
-  { type: "abandoned", project: "Weather Dashboard", date: "1 week ago" },
-  { type: "updated", project: "E-commerce Platform", date: "2 weeks ago" },
-];
+import { EmptyState } from "@/components/empty-state";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -95,13 +40,73 @@ export default async function DashboardPage() {
     image: session.user.image || undefined,
   };
 
-  const activeProjects = mockProjects.filter((p) => p.status === "ACTIVE");
-  const completedProjects = mockProjects.filter(
-    (p) => p.status === "COMPLETED",
-  );
-  const abandonedProjects = mockProjects.filter(
-    (p) => p.status === "ABANDONED",
-  );
+  // Fetch real data
+  const [projectsResult, statsResult] = await Promise.all([
+    getProjects(),
+    getProjectStats(),
+  ]);
+
+  const projects = projectsResult.success ? projectsResult.data : [];
+  const stats = statsResult.success
+    ? statsResult.data
+    : { total: 0, active: 0, completed: 0, abandoned: 0, completionRate: 0 };
+
+  const activeProjects = projects.filter((p) => p.status === "ACTIVE");
+  const completedProjects = projects.filter((p) => p.status === "COMPLETED");
+  const abandonedProjects = projects.filter((p) => p.status === "ABANDONED");
+
+  // Build recent activity from projects
+  const recentActivity = projects
+    .map((project) => {
+      if (project.status === "ABANDONED" && project.abandonedAt) {
+        return {
+          type: "abandoned" as const,
+          project: project.name,
+          date: formatDistanceToNow(new Date(project.abandonedAt), {
+            addSuffix: true,
+            locale: fr,
+          }),
+          timestamp: new Date(project.abandonedAt),
+        };
+      }
+      if (project.status === "COMPLETED" && project.endDate) {
+        return {
+          type: "completed" as const,
+          project: project.name,
+          date: formatDistanceToNow(new Date(project.endDate), {
+            addSuffix: true,
+            locale: fr,
+          }),
+          timestamp: new Date(project.endDate),
+        };
+      }
+      return {
+        type: "created" as const,
+        project: project.name,
+        date: formatDistanceToNow(new Date(project.createdAt), {
+          addSuffix: true,
+          locale: fr,
+        }),
+        timestamp: new Date(project.createdAt),
+      };
+    })
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, 5);
+
+  // Helper to convert project to ProjectCard props
+  const toProjectCardProps = (project: (typeof projects)[0]) => ({
+    id: project.id,
+    name: project.name,
+    description: project.description || undefined,
+    status: project.status as ProjectStatus,
+    thumbnail: project.imageUrl || undefined,
+    tags: project.tags.map((t) => t.label),
+    repoUrl: project.repositoryUrl || undefined,
+    liveUrl: project.liveUrl || undefined,
+    startDate: project.startDate.toISOString().split("T")[0],
+    endDate: project.endDate?.toISOString().split("T")[0],
+    abandonedDate: project.abandonedAt?.toISOString().split("T")[0],
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,14 +118,13 @@ export default async function DashboardPage() {
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">
-              Welcome back, {user.name}! Here&apos;s an overview of your
-              projects.
+              Bienvenue {user.name} ! Voici un aperçu de vos projets.
             </p>
           </div>
           <Link href="/projects/new">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              New Project
+              Nouveau projet
             </Button>
           </Link>
         </div>
@@ -128,28 +132,35 @@ export default async function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
-            title="Total Projects"
-            value={mockProjects.length}
+            title="Total Projets"
+            value={stats.total}
             icon={FolderKanban}
-            trend={{ value: 12, label: "from last month", positive: true }}
           />
           <StatsCard
-            title="Active"
-            value={activeProjects.length}
+            title="Actifs"
+            value={stats.active}
             icon={Activity}
-            description="Currently in progress"
+            description="En cours"
           />
           <StatsCard
-            title="Completed"
-            value={completedProjects.length}
+            title="Terminés"
+            value={stats.completed}
             icon={CheckCircle2}
-            trend={{ value: 8, label: "completion rate", positive: true }}
+            trend={
+              stats.total > 0
+                ? {
+                    value: stats.completionRate,
+                    label: "taux de complétion",
+                    positive: stats.completionRate >= 50,
+                  }
+                : undefined
+            }
           />
           <StatsCard
-            title="Abandoned"
-            value={abandonedProjects.length}
+            title="Abandonnés"
+            value={stats.abandoned}
             icon={Pause}
-            description="Paused or stopped"
+            description="En pause ou arrêtés"
           />
         </div>
 
@@ -157,59 +168,98 @@ export default async function DashboardPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Projects Section */}
           <div className="lg:col-span-2">
-            <Tabs defaultValue="active" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <TabsList>
-                  <TabsTrigger value="active" className="gap-2">
-                    <Activity className="h-4 w-4" />
-                    Active ({activeProjects.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="completed" className="gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Completed ({completedProjects.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="abandoned" className="gap-2">
-                    <Pause className="h-4 w-4" />
-                    Abandoned ({abandonedProjects.length})
-                  </TabsTrigger>
-                </TabsList>
-                <Link href="/projects">
-                  <Button variant="ghost" size="sm">
-                    View all
-                  </Button>
-                </Link>
-              </div>
-
-              <TabsContent value="active" className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  {activeProjects.map((project) => (
-                    <ProjectCard key={project.id} {...project} />
-                  ))}
+            {projects.length === 0 ? (
+              <EmptyState
+                icon={FolderKanban}
+                title="Aucun projet"
+                description="Commencez par créer votre premier projet pour suivre vos idées et votre progression."
+                action={{
+                  label: "Créer un projet",
+                  href: "/projects/new",
+                }}
+              />
+            ) : (
+              <Tabs defaultValue="active" className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <TabsList>
+                    <TabsTrigger value="active" className="gap-2">
+                      <Activity className="h-4 w-4" />
+                      Actifs ({activeProjects.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="completed" className="gap-2">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Terminés ({completedProjects.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="abandoned" className="gap-2">
+                      <Pause className="h-4 w-4" />
+                      Abandonnés ({abandonedProjects.length})
+                    </TabsTrigger>
+                  </TabsList>
+                  <Link href="/projects">
+                    <Button variant="ghost" size="sm">
+                      Voir tout
+                    </Button>
+                  </Link>
                 </div>
-                {activeProjects.length === 0 && (
-                  <Card className="p-8 text-center">
-                    <Archive className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No active projects</p>
-                  </Card>
-                )}
-              </TabsContent>
 
-              <TabsContent value="completed" className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  {completedProjects.map((project) => (
-                    <ProjectCard key={project.id} {...project} />
-                  ))}
-                </div>
-              </TabsContent>
+                <TabsContent value="active" className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {activeProjects.slice(0, 4).map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        {...toProjectCardProps(project)}
+                      />
+                    ))}
+                  </div>
+                  {activeProjects.length === 0 && (
+                    <Card className="p-8 text-center">
+                      <Archive className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        Aucun projet actif
+                      </p>
+                    </Card>
+                  )}
+                </TabsContent>
 
-              <TabsContent value="abandoned" className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  {abandonedProjects.map((project) => (
-                    <ProjectCard key={project.id} {...project} />
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="completed" className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {completedProjects.slice(0, 4).map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        {...toProjectCardProps(project)}
+                      />
+                    ))}
+                  </div>
+                  {completedProjects.length === 0 && (
+                    <Card className="p-8 text-center">
+                      <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        Aucun projet terminé
+                      </p>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="abandoned" className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {abandonedProjects.slice(0, 4).map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        {...toProjectCardProps(project)}
+                      />
+                    ))}
+                  </div>
+                  {abandonedProjects.length === 0 && (
+                    <Card className="p-8 text-center">
+                      <Pause className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">
+                        Aucun projet abandonné
+                      </p>
+                    </Card>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -219,40 +269,35 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Quick Insights
+                  Aperçu rapide
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Completion Rate
+                    Taux de complétion
                   </span>
-                  <span className="font-semibold">
-                    {Math.round(
-                      (completedProjects.length / mockProjects.length) * 100,
-                    )}
-                    %
-                  </span>
+                  <span className="font-semibold">{stats.completionRate}%</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-primary h-2 rounded-full"
+                    className="bg-primary h-2 rounded-full transition-all"
                     style={{
-                      width: `${(completedProjects.length / mockProjects.length) * 100}%`,
+                      width: `${stats.completionRate}%`,
                     }}
                   />
                 </div>
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-sm text-muted-foreground">
-                    Avg. Project Duration
+                    Projets actifs
                   </span>
-                  <span className="font-semibold">3.5 months</span>
+                  <span className="font-semibold">{stats.active}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Projects This Year
+                    Total des projets
                   </span>
-                  <span className="font-semibold">8</span>
+                  <span className="font-semibold">{stats.total}</span>
                 </div>
               </CardContent>
             </Card>
@@ -260,38 +305,50 @@ export default async function DashboardPage() {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-                <CardDescription>Your latest project updates</CardDescription>
+                <CardTitle className="text-lg">Activité récente</CardTitle>
+                <CardDescription>
+                  Vos dernières mises à jour de projets
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div
-                        className={`mt-1 h-2 w-2 rounded-full ${
-                          activity.type === "created"
-                            ? "bg-blue-500"
-                            : activity.type === "completed"
-                              ? "bg-green-500"
-                              : activity.type === "abandoned"
-                                ? "bg-red-500"
-                                : "bg-yellow-500"
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm">
-                          <span className="capitalize">{activity.type}</span>{" "}
-                          <span className="font-medium">
-                            {activity.project}
-                          </span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {activity.date}
-                        </p>
+                {recentActivity.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucune activité récente
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div
+                          className={`mt-1 h-2 w-2 rounded-full ${
+                            activity.type === "created"
+                              ? "bg-blue-500"
+                              : activity.type === "completed"
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm">
+                            <span className="capitalize">
+                              {activity.type === "created"
+                                ? "Créé"
+                                : activity.type === "completed"
+                                  ? "Terminé"
+                                  : "Abandonné"}
+                            </span>{" "}
+                            <span className="font-medium">
+                              {activity.project}
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {activity.date}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
