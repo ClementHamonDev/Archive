@@ -1,24 +1,14 @@
-"use client";
-
 import { getSession } from "@/lib/auth";
-import { LogoutButton } from "@/components/logout-button";
+import { redirect } from "next/navigation";
 
 const Home = async () => {
-  const sess = await getSession();
+  const session = await getSession();
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 ">
-      Home Page
-      {sess ? (
-        <div className="flex flex-col items-center gap-4">
-          <div>Welcome, {sess.user?.email}</div>
-          <LogoutButton />
-        </div>
-      ) : (
-        <div>Please sign in.</div>
-      )}
-    </div>
-  );
+  if (session) {
+    redirect("/dashboard");
+  } else {
+    redirect("/login");
+  }
 };
 
 export default Home;
