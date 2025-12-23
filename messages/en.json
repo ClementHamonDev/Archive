@@ -266,6 +266,34 @@
       "description": "Are you sure you want to delete the project \"{name}\"? This action is irreversible and will also delete all tags, abandonment analyses and revival history.",
       "confirm": "Delete",
       "deleting": "Deleting..."
+    },
+    "complete": {
+      "title": "Mark as completed",
+      "description": "Congratulations! Mark \"{name}\" as completed to celebrate this achievement.",
+      "endDate": "End date",
+      "confirm": "Complete project",
+      "completing": "Completing..."
+    },
+    "abandon": {
+      "title": "Abandon project",
+      "description": "Document why you're abandoning \"{name}\" to learn from this experience.",
+      "mainReason": "Main reason",
+      "mainReasonPlaceholder": "Select a reason",
+      "secondaryReasons": "Secondary reasons (optional)",
+      "retrospective": "Retrospective",
+      "retrospectivePlaceholder": "What happened? What would you have done differently?",
+      "lessonsLearned": "Lessons learned",
+      "lessonsLearnedPlaceholder": "What do you take away from this experience?",
+      "confirm": "Abandon project",
+      "abandoning": "Abandoning..."
+    },
+    "revive": {
+      "title": "Revive project",
+      "description": "Ready to give \"{name}\" a new life?",
+      "note": "Note (optional)",
+      "notePlaceholder": "Why are you reviving this project? What has changed?",
+      "confirm": "Revive project",
+      "reviving": "Reviving..."
     }
   },
   "projectForm": {

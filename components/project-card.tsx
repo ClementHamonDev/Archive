@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,6 +19,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteProjectDialog } from "@/components/delete-project-dialog";
+import { CompleteProjectDialog } from "@/components/complete-project-dialog";
+import { AbandonProjectDialog } from "@/components/abandon-project-dialog";
+import { ReviveProjectDialog } from "@/components/revive-project-dialog";
 import {
   Archive,
   CheckCircle2,
@@ -72,6 +79,7 @@ export function ProjectCard({
   startDate,
 }: ProjectCardProps) {
   const { label, variant, icon: StatusIcon } = statusConfig[status];
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg hover:border-primary/20">
@@ -103,7 +111,7 @@ export function ProjectCard({
               {name}
             </Link>
           </CardTitle>
-          <DropdownMenu>
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -124,28 +132,79 @@ export function ProjectCard({
                 </Link>
               </DropdownMenuItem>
               {status === "ABANDONED" && (
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                  <RotateCcw className="h-4 w-4" />
-                  Revive
-                </DropdownMenuItem>
+                <ReviveProjectDialog
+                  projectId={id}
+                  projectName={name}
+                  trigger={
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 cursor-pointer"
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Revive
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+              {status === "COMPLETED" && (
+                <ReviveProjectDialog
+                  projectId={id}
+                  projectName={name}
+                  trigger={
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 cursor-pointer"
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Reactivate
+                    </DropdownMenuItem>
+                  }
+                />
               )}
               {status === "ACTIVE" && (
                 <>
-                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Mark Complete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                    <Pause className="h-4 w-4" />
-                    Abandon
-                  </DropdownMenuItem>
+                  <CompleteProjectDialog
+                    projectId={id}
+                    projectName={name}
+                    trigger={
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 cursor-pointer"
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Mark Complete
+                      </DropdownMenuItem>
+                    }
+                  />
+                  <AbandonProjectDialog
+                    projectId={id}
+                    projectName={name}
+                    trigger={
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 cursor-pointer"
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        <Pause className="h-4 w-4" />
+                        Abandon
+                      </DropdownMenuItem>
+                    }
+                  />
                 </>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive">
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              <DeleteProjectDialog
+                projectId={id}
+                projectName={name}
+                trigger={
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

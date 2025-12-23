@@ -1,5 +1,8 @@
 import { Header } from "@/components/header";
 import { DeleteProjectDialog } from "@/components/delete-project-dialog";
+import { AbandonProjectDialog } from "@/components/abandon-project-dialog";
+import { CompleteProjectDialog } from "@/components/complete-project-dialog";
+import { ReviveProjectDialog } from "@/components/revive-project-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -347,10 +350,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <p className="text-sm text-muted-foreground">
                       {t("abandonment.readyToRevive")}
                     </p>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <RotateCcw className="h-4 w-4" />
-                      {t("actions.revive")}
-                    </Button>
+                    <ReviveProjectDialog
+                      projectId={project.id}
+                      projectName={project.name}
+                      trigger={
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <RotateCcw className="h-4 w-4" />
+                          {t("actions.revive")}
+                        </Button>
+                      }
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -365,27 +374,51 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <CardContent className="space-y-3">
                 {project.status === "ACTIVE" && (
                   <>
-                    <Button className="w-full gap-2" variant="default">
-                      <CheckCircle2 className="h-4 w-4" />
-                      {t("actions.markCompleted")}
-                    </Button>
-                    <Button className="w-full gap-2" variant="outline">
-                      <Pause className="h-4 w-4" />
-                      {t("actions.abandon")}
-                    </Button>
+                    <CompleteProjectDialog
+                      projectId={project.id}
+                      projectName={project.name}
+                      trigger={
+                        <Button className="w-full gap-2" variant="default">
+                          <CheckCircle2 className="h-4 w-4" />
+                          {t("actions.markCompleted")}
+                        </Button>
+                      }
+                    />
+                    <AbandonProjectDialog
+                      projectId={project.id}
+                      projectName={project.name}
+                      trigger={
+                        <Button className="w-full gap-2" variant="outline">
+                          <Pause className="h-4 w-4" />
+                          {t("actions.abandon")}
+                        </Button>
+                      }
+                    />
                   </>
                 )}
                 {project.status === "COMPLETED" && (
-                  <Button className="w-full gap-2" variant="outline">
-                    <Play className="h-4 w-4" />
-                    {t("actions.reactivate")}
-                  </Button>
+                  <ReviveProjectDialog
+                    projectId={project.id}
+                    projectName={project.name}
+                    trigger={
+                      <Button className="w-full gap-2" variant="outline">
+                        <Play className="h-4 w-4" />
+                        {t("actions.reactivate")}
+                      </Button>
+                    }
+                  />
                 )}
                 {project.status === "ABANDONED" && (
-                  <Button className="w-full gap-2" variant="default">
-                    <RotateCcw className="h-4 w-4" />
-                    {t("actions.revive")}
-                  </Button>
+                  <ReviveProjectDialog
+                    projectId={project.id}
+                    projectName={project.name}
+                    trigger={
+                      <Button className="w-full gap-2" variant="default">
+                        <RotateCcw className="h-4 w-4" />
+                        {t("actions.revive")}
+                      </Button>
+                    }
+                  />
                 )}
               </CardContent>
             </Card>

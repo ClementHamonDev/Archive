@@ -14,6 +14,12 @@ import {
   error,
   ProjectWithRelations,
   ProjectStats,
+  ProjectAnalytics,
+  MonthlyActivityData,
+  AbandonmentReasonStat,
+  TagStat,
+  TagSuccessRate,
+  AbandonmentReason,
 } from "@/lib/types";
 import {
   createProjectSchema,
@@ -443,9 +449,12 @@ export async function reviveProject(
       return error("Projet non trouvé", "PROJECT_NOT_FOUND");
     }
 
-    if (existingProject.status !== "ABANDONED") {
+    if (
+      existingProject.status !== "ABANDONED" &&
+      existingProject.status !== "COMPLETED"
+    ) {
       return error(
-        "Seul un projet abandonné peut être relancé",
+        "Seul un projet abandonné ou terminé peut être relancé",
         "INVALID_STATUS",
       );
     }
@@ -576,6 +585,210 @@ export async function getProjectStats(): Promise<ActionResult<ProjectStats>> {
         ? err.message
         : "Impossible de récupérer les statistiques",
       "GET_STATS_ERROR",
+    );
+  }
+}
+
+/**
+ * Get comprehensive analytics for the current user's projects
+ */
+export async function getProjectAnalytics(): Promise<
+  ActionResult<ProjectAnalytics>
+> {
+  try {
+    const userId = await requireAuth();
+
+    // Get all projects with relations
+    const userProjects = await db.query.projects.findMany({
+      where: eq(projects.userId, userId),
+      with: {
+        tags: true,
+        abandonment: true,
+        revivals: true,
+      },
+    });
+
+    // Calculate basic stats
+    const total = userProjects.length;
+    const active = userProjects.filter((p) => p.status === "ACTIVE").length;
+    const completed = userProjects.filter(
+      (p) => p.status === "COMPLETED",
+    ).length;
+    const abandoned = userProjects.filter(
+      (p) => p.status === "ABANDONED",
+    ).length;
+    const completionRate =
+      total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    // Calculate monthly activity for the last 6 months
+    const monthlyActivity: MonthlyActivityData[] = [];
+    const now = new Date();
+    const months = [
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
+    ];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+      const createdInMonth = userProjects.filter((p) => {
+        const created = new Date(p.createdAt);
+        return created >= date && created <= monthEnd;
+      }).length;
+
+      const completedInMonth = userProjects.filter((p) => {
+        if (!p.endDate) return false;
+        const endDate = new Date(p.endDate);
+        return endDate >= date && endDate <= monthEnd;
+      }).length;
+
+      const abandonedInMonth = userProjects.filter((p) => {
+        if (!p.abandonedAt) return false;
+        const abandonedAt = new Date(p.abandonedAt);
+        return abandonedAt >= date && abandonedAt <= monthEnd;
+      }).length;
+
+      monthlyActivity.push({
+        month: months[date.getMonth()],
+        created: createdInMonth,
+        completed: completedInMonth,
+        abandoned: abandonedInMonth,
+      });
+    }
+
+    // Calculate abandonment reasons
+    const reasonCounts: Record<string, number> = {};
+    userProjects.forEach((p) => {
+      if (p.abandonment) {
+        const reason = p.abandonment.mainReason;
+        reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+      }
+    });
+
+    const totalAbandoned = Object.values(reasonCounts).reduce(
+      (a, b) => a + b,
+      0,
+    );
+    const abandonmentReasons: AbandonmentReasonStat[] = Object.entries(
+      reasonCounts,
+    )
+      .map(([reason, count]) => ({
+        reason: reason as AbandonmentReason,
+        count,
+        percentage:
+          totalAbandoned > 0 ? Math.round((count / totalAbandoned) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Calculate top tags
+    const tagCounts: Record<string, number> = {};
+    userProjects.forEach((p) => {
+      p.tags.forEach((tag) => {
+        tagCounts[tag.label] = (tagCounts[tag.label] || 0) + 1;
+      });
+    });
+
+    const topTags: TagStat[] = Object.entries(tagCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Calculate tag success rates
+    const tagStats: Record<string, { total: number; completed: number }> = {};
+    userProjects.forEach((p) => {
+      p.tags.forEach((tag) => {
+        if (!tagStats[tag.label]) {
+          tagStats[tag.label] = { total: 0, completed: 0 };
+        }
+        tagStats[tag.label].total++;
+        if (p.status === "COMPLETED") {
+          tagStats[tag.label].completed++;
+        }
+      });
+    });
+
+    const tagSuccessRates: TagSuccessRate[] = Object.entries(tagStats)
+      .filter(([, stats]) => stats.total >= 2) // Only tags with 2+ projects
+      .map(([name, stats]) => ({
+        name,
+        total: stats.total,
+        completed: stats.completed,
+        rate: Math.round((stats.completed / stats.total) * 100),
+      }))
+      .sort((a, b) => b.rate - a.rate)
+      .slice(0, 6);
+
+    // Calculate key metrics
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const projectsStartedThisYear = userProjects.filter(
+      (p) => new Date(p.createdAt) >= startOfYear,
+    ).length;
+
+    const projectsCompletedThisYear = userProjects.filter(
+      (p) => p.endDate && new Date(p.endDate) >= startOfYear,
+    ).length;
+
+    // Revival success rate: revivals that led to completed projects
+    const revivedProjects = userProjects.filter((p) => p.revivals.length > 0);
+    const successfulRevivals = revivedProjects.filter(
+      (p) => p.status === "COMPLETED",
+    ).length;
+    const revivalSuccessRate =
+      revivedProjects.length > 0
+        ? Math.round((successfulRevivals / revivedProjects.length) * 100)
+        : 0;
+
+    // Average time to abandon (in days)
+    const abandonedProjects = userProjects.filter(
+      (p) => p.abandonedAt && p.startDate,
+    );
+    let avgTimeToAbandonDays: number | null = null;
+    if (abandonedProjects.length > 0) {
+      const totalDays = abandonedProjects.reduce((sum, p) => {
+        const start = new Date(p.startDate).getTime();
+        const abandoned = new Date(p.abandonedAt!).getTime();
+        return sum + (abandoned - start) / (1000 * 60 * 60 * 24);
+      }, 0);
+      avgTimeToAbandonDays = Math.round(totalDays / abandonedProjects.length);
+    }
+
+    return success({
+      stats: {
+        total,
+        active,
+        completed,
+        abandoned,
+        completionRate,
+      },
+      monthlyActivity,
+      abandonmentReasons,
+      topTags,
+      tagSuccessRates,
+      keyMetrics: {
+        projectsStartedThisYear,
+        projectsCompletedThisYear,
+        revivalSuccessRate,
+        avgTimeToAbandonDays,
+      },
+    });
+  } catch (err) {
+    console.error("Error getting project analytics:", err);
+    return error(
+      err instanceof Error
+        ? err.message
+        : "Impossible de récupérer les analytics",
+      "GET_ANALYTICS_ERROR",
     );
   }
 }

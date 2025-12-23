@@ -101,3 +101,45 @@ export interface ProjectStats {
   abandoned: number;
   completionRate: number;
 }
+
+/**
+ * Analytics types
+ */
+export interface MonthlyActivityData {
+  month: string;
+  created: number;
+  completed: number;
+  abandoned: number;
+}
+
+export interface AbandonmentReasonStat {
+  reason: AbandonmentReason;
+  count: number;
+  percentage: number;
+}
+
+export interface TagStat {
+  name: string;
+  count: number;
+}
+
+export interface TagSuccessRate {
+  name: string;
+  total: number;
+  completed: number;
+  rate: number;
+}
+
+export interface ProjectAnalytics {
+  stats: ProjectStats;
+  monthlyActivity: MonthlyActivityData[];
+  abandonmentReasons: AbandonmentReasonStat[];
+  topTags: TagStat[];
+  tagSuccessRates: TagSuccessRate[];
+  keyMetrics: {
+    projectsStartedThisYear: number;
+    projectsCompletedThisYear: number;
+    revivalSuccessRate: number;
+    avgTimeToAbandonDays: number | null;
+  };
+}

@@ -266,6 +266,34 @@
       "description": "Êtes-vous sûr de vouloir supprimer le projet \"{name}\" ? Cette action est irréversible et supprimera également tous les tags, analyses d'abandon et historique de relances associés.",
       "confirm": "Supprimer",
       "deleting": "Suppression..."
+    },
+    "complete": {
+      "title": "Marquer comme terminé",
+      "description": "Félicitations ! Marquez \"{name}\" comme terminé pour célébrer cette réussite.",
+      "endDate": "Date de fin",
+      "confirm": "Terminer le projet",
+      "completing": "En cours..."
+    },
+    "abandon": {
+      "title": "Abandonner le projet",
+      "description": "Documentez pourquoi vous abandonnez \"{name}\" pour en tirer des leçons.",
+      "mainReason": "Raison principale",
+      "mainReasonPlaceholder": "Sélectionnez une raison",
+      "secondaryReasons": "Raisons secondaires (optionnel)",
+      "retrospective": "Rétrospective",
+      "retrospectivePlaceholder": "Qu'est-ce qui s'est passé ? Qu'auriez-vous fait différemment ?",
+      "lessonsLearned": "Leçons apprises",
+      "lessonsLearnedPlaceholder": "Que retirez-vous de cette expérience ?",
+      "confirm": "Abandonner le projet",
+      "abandoning": "En cours..."
+    },
+    "revive": {
+      "title": "Relancer le projet",
+      "description": "Prêt à donner une nouvelle vie à \"{name}\" ?",
+      "note": "Note (optionnel)",
+      "notePlaceholder": "Pourquoi relancez-vous ce projet ? Qu'est-ce qui a changé ?",
+      "confirm": "Relancer le projet",
+      "reviving": "En cours..."
     }
   },
   "projectForm": {

@@ -13,36 +13,41 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteProject } from "@/lib/actions/projects";
-import { Loader2, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { reviveProject } from "@/lib/actions/projects";
+import { Loader2, RotateCcw } from "lucide-react";
 
-interface DeleteProjectDialogProps {
+interface ReviveProjectDialogProps {
   projectId: string;
   projectName: string;
   trigger?: React.ReactNode;
-  redirectTo?: string;
 }
 
-export function DeleteProjectDialog({
+export function ReviveProjectDialog({
   projectId,
   projectName,
   trigger,
-  redirectTo = "/projects",
-}: DeleteProjectDialogProps) {
+}: ReviveProjectDialogProps) {
   const router = useRouter();
-  const t = useTranslations("project.delete");
+  const t = useTranslations("project.revive");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const handleDelete = () => {
+  const [note, setNote] = useState("");
+
+  const handleSubmit = () => {
     setError(null);
     startTransition(async () => {
-      const result = await deleteProject(projectId);
+      const result = await reviveProject({
+        id: projectId,
+        note: note || null,
+      });
+
       if (result.success) {
         setOpen(false);
-        router.push(redirectTo);
         router.refresh();
       } else {
         setError(result.error);
@@ -50,17 +55,24 @@ export function DeleteProjectDialog({
     });
   };
 
+  const resetForm = () => {
+    setNote("");
+    setError(null);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        if (!newOpen) resetForm();
+      }}
+    >
       <DialogTrigger asChild>
         {trigger || (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-            {tCommon("delete")}
+          <Button variant="default" className="w-full gap-2">
+            <RotateCcw className="h-4 w-4" />
+            {t("confirm").replace(" le projet", "")}
           </Button>
         )}
       </DialogTrigger>
@@ -71,6 +83,20 @@ export function DeleteProjectDialog({
             {t("description", { name: projectName })}
           </DialogDescription>
         </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="note">{t("note")}</Label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t("notePlaceholder")}
+              rows={4}
+              maxLength={1000}
+            />
+          </div>
+        </div>
 
         {error && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
@@ -86,15 +112,11 @@ export function DeleteProjectDialog({
           >
             {tCommon("cancel")}
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
+          <Button onClick={handleSubmit} disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {t("deleting")}
+                {t("reviving")}
               </>
             ) : (
               t("confirm")
