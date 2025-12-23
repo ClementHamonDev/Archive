@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,6 +32,7 @@ import {
   User,
 } from "lucide-react";
 import { LogoutButton } from "./logout-button";
+import { LocaleSwitcher } from "./locale-switcher";
 
 interface HeaderProps {
   user?: {
@@ -41,14 +43,16 @@ interface HeaderProps {
   isAuthenticated?: boolean;
 }
 
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Projects", href: "/projects", icon: FolderKanban },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-];
-
 export function Header({ user, isAuthenticated = false }: HeaderProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const locale = useLocale();
+
+  const navigation = [
+    { name: t("dashboard"), href: "/dashboard", icon: Home },
+    { name: t("projects"), href: "/projects", icon: FolderKanban },
+    { name: t("analytics"), href: "/analytics", icon: BarChart3 },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -84,10 +88,11 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-3">
+              <LocaleSwitcher currentLocale={locale} />
               <Link href="/projects/new">
                 <Button size="sm" className="gap-2">
                   <Plus className="h-4 w-4" />
-                  New Project
+                  {t("newProject")}
                 </Button>
               </Link>
 
@@ -123,7 +128,7 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <User className="h-4 w-4" />
-                      Profile
+                      {t("profile")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -132,7 +137,7 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                       className="flex items-center gap-2 cursor-pointer"
                     >
                       <Settings className="h-4 w-4" />
-                      Settings
+                      {t("settings")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -158,6 +163,10 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                   </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 mt-6">
+                  {/* Language Switcher Mobile */}
+                  <div className="flex justify-end">
+                    <LocaleSwitcher currentLocale={locale} />
+                  </div>
                   {/* User Info */}
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                     <Avatar className="h-10 w-10">
@@ -197,19 +206,19 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                     <Link href="/projects/new">
                       <Button className="w-full gap-2">
                         <Plus className="h-4 w-4" />
-                        New Project
+                        {t("newProject")}
                       </Button>
                     </Link>
                     <Link href="/profile">
                       <Button variant="outline" className="w-full gap-2">
                         <User className="h-4 w-4" />
-                        Profile
+                        {t("profile")}
                       </Button>
                     </Link>
                     <Link href="/settings">
                       <Button variant="outline" className="w-full gap-2">
                         <Settings className="h-4 w-4" />
-                        Settings
+                        {t("settings")}
                       </Button>
                     </Link>
                     <LogoutButton variant="mobile" />
@@ -221,11 +230,12 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
         ) : (
           /* Non-authenticated actions */
           <div className="flex items-center gap-3">
+            <LocaleSwitcher currentLocale={locale} />
             <Link href="/login">
-              <Button variant="ghost">Log in</Button>
+              <Button variant="ghost">{t("dashboard")}</Button>
             </Link>
             <Link href="/signup">
-              <Button>Get Started</Button>
+              <Button>{t("newProject")}</Button>
             </Link>
           </div>
         )}

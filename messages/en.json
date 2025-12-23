@@ -1,0 +1,416 @@
+{
+  "common": {
+    "appName": "Archive",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "viewAll": "View all",
+    "search": "Search",
+    "all": "All",
+    "public": "Public",
+    "private": "Private",
+    "statuses": {
+      "active": "Active",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    }
+  },
+  "landing": {
+    "tagline": "Project Lifecycle Tracker",
+    "heroTitle": "Track, Analyze & Learn from",
+    "heroTitleHighlight": "Your Projects",
+    "heroDescription": "Archive helps you collect, organize, and analyze your personal projects. Understand why projects succeed or fail and improve your future work.",
+    "ctaGithub": "Continue with GitHub",
+    "ctaLearnMore": "Learn more",
+    "featuresTitle": "Everything you need",
+    "featuresSubtitle": "to manage your projects",
+    "featuresDescription": "From tracking active projects to analyzing why some were abandoned, Archive provides the tools you need for continuous improvement.",
+    "features": {
+      "projectCollection": {
+        "title": "Project Collection",
+        "description": "Organize all your projects in one place with descriptions, links, and images."
+      },
+      "lifecycleTracking": {
+        "title": "Lifecycle Tracking",
+        "description": "Track project status from active to completed or abandoned with full history."
+      },
+      "abandonmentAnalysis": {
+        "title": "Abandonment Analysis",
+        "description": "Document why projects were abandoned and learn from your decisions."
+      },
+      "analytics": {
+        "title": "Analytics & Insights",
+        "description": "Get insights on completion rates, common issues, and project patterns."
+      },
+      "tags": {
+        "title": "Tags & Organization",
+        "description": "Tag projects by technology, domain, or any custom category you need."
+      },
+      "revivalTracking": {
+        "title": "Revival Tracking",
+        "description": "Revive abandoned projects and track the history of stop/start cycles."
+      }
+    },
+    "ctaTitle": "Ready to organize your projects?",
+    "ctaDescription": "Start tracking your projects today and gain insights into your development journey.",
+    "ctaGetStarted": "Get Started with GitHub",
+    "footer": {
+      "rights": "All rights reserved.",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome",
+      "description": "Login to your account",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "orContinueWith": "Or continue with",
+      "github": "GitHub"
+    },
+    "signup": {
+      "title": "Create Account",
+      "description": "Sign up to get started",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "submit": "Sign up",
+      "submitting": "Signing up...",
+      "hasAccount": "Already have an account?",
+      "login": "Login",
+      "orContinueWith": "Or continue with",
+      "github": "GitHub"
+    },
+    "logout": "Log out",
+    "errors": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "passwordMinLength": "Password must be at least 8 characters long",
+      "passwordsNoMatch": "Passwords do not match",
+      "loginFailed": "Login failed",
+      "signupFailed": "Sign up failed",
+      "githubFailed": "GitHub login failed",
+      "generic": "An error occurred"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "analytics": "Analytics",
+    "newProject": "New Project",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome {name}! Here's an overview of your projects.",
+    "newProject": "New project",
+    "stats": {
+      "totalProjects": "Total Projects",
+      "active": "Active",
+      "activeDescription": "In progress",
+      "completed": "Completed",
+      "completionRate": "completion rate",
+      "abandoned": "Abandoned",
+      "abandonedDescription": "Paused or stopped"
+    },
+    "noProjects": {
+      "title": "No projects",
+      "description": "Start by creating your first project to track your ideas and progress.",
+      "action": "Create a project"
+    },
+    "noActiveProjects": "No active projects",
+    "noCompletedProjects": "No completed projects",
+    "noAbandonedProjects": "No abandoned projects",
+    "recentActivity": {
+      "title": "Recent Activity",
+      "description": "Latest updates on your projects",
+      "noActivity": "No recent activity",
+      "created": "Created",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "newProject": {
+        "title": "New Project",
+        "description": "Start a new project"
+      },
+      "viewAll": {
+        "title": "View All",
+        "description": "Explore all your projects"
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "View statistics"
+      }
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Manage and organize all your projects",
+    "newProject": "New project",
+    "searchPlaceholder": "Search projects...",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed",
+      "abandoned": "Abandoned",
+      "sortBy": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "nameAsc": "Name A-Z",
+      "nameDesc": "Name Z-A"
+    },
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "noProjects": {
+      "title": "No projects",
+      "description": "Create your first project to start tracking your work",
+      "action": "Create a project"
+    },
+    "suggestions": "Suggestions:",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "card": {
+      "viewProject": "View project",
+      "editProject": "Edit",
+      "deleteProject": "Delete",
+      "reviveProject": "Revive",
+      "archiveProject": "Archive",
+      "markCompleted": "Mark as completed",
+      "startedOn": "Started on"
+    }
+  },
+  "project": {
+    "backToProjects": "Back to projects",
+    "backToProject": "Back to project",
+    "startedOn": "Started on",
+    "description": "Description",
+    "noDescription": "No description provided.",
+    "technologies": "Technologies",
+    "viewCode": "View code",
+    "viewLive": "View live",
+    "actionsTitle": "Actions",
+    "history": "History",
+    "visibility": {
+      "public": "Public",
+      "private": "Private"
+    },
+    "timeline": {
+      "created": "Project created",
+      "completed": "Project completed",
+      "abandoned": "Project abandoned",
+      "revived": "Project revived"
+    },
+    "info": {
+      "title": "Information",
+      "createdAt": "Created on",
+      "updatedAt": "Updated on",
+      "completedAt": "Completed on",
+      "abandonedAt": "Abandoned on",
+      "revivals": "Number of revivals"
+    },
+    "actions": {
+      "markCompleted": "Mark as completed",
+      "abandon": "Abandon project",
+      "reactivate": "Reactivate project",
+      "revive": "Revive project"
+    },
+    "links": {
+      "title": "Links",
+      "repository": "Repository",
+      "liveUrl": "Live site"
+    },
+    "abandonment": {
+      "title": "Abandonment Analysis",
+      "subtitle": "Understanding why this project was abandoned",
+      "mainReason": "Main reason",
+      "secondaryReasons": "Secondary reasons",
+      "retrospective": "Retrospective",
+      "lessonsLearned": "Lessons learned",
+      "readyToRevive": "Ready to revive this project?",
+      "reasons": {
+        "time": "Lack of time",
+        "motivation": "Loss of motivation",
+        "technical": "Technical difficulties",
+        "scope": "Scope too large",
+        "market": "No more market",
+        "organization": "Organization issues",
+        "burnout": "Burnout",
+        "other": "Other"
+      }
+    },
+    "delete": {
+      "title": "Delete project",
+      "description": "Are you sure you want to delete the project \"{name}\"? This action is irreversible and will also delete all tags, abandonment analyses and revival history.",
+      "confirm": "Delete",
+      "deleting": "Deleting..."
+    }
+  },
+  "projectForm": {
+    "backToProjects": "Back to projects",
+    "backToProject": "Back to project",
+    "newTitle": "New project",
+    "newSubtitle": "Add a new project to your archive.",
+    "editTitle": "Edit project",
+    "editSubtitle": "Update your project information.",
+    "sections": {
+      "general": {
+        "title": "General Information",
+        "description": "Essential details of your project"
+      },
+      "links": {
+        "title": "Links",
+        "description": "Repository and live site URLs"
+      },
+      "tags": {
+        "title": "Tags",
+        "description": "Categorize your project (max. 10 tags)",
+        "addPlaceholder": "Add a tag...",
+        "suggestions": "Suggestions:"
+      }
+    },
+    "fields": {
+      "name": {
+        "label": "Project name",
+        "placeholder": "My awesome project"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe your project..."
+      },
+      "status": {
+        "label": "Status",
+        "placeholder": "Select a status"
+      },
+      "startDate": {
+        "label": "Start date"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "public": "Publicly visible",
+        "private": "Only visible to you"
+      },
+      "repositoryUrl": {
+        "label": "Repository URL",
+        "placeholder": "https://github.com/username/project"
+      },
+      "liveUrl": {
+        "label": "Live URL",
+        "placeholder": "https://myproject.com"
+      }
+    },
+    "createButton": "Create project",
+    "creating": "Creating...",
+    "saveButton": "Save",
+    "saving": "Saving..."
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Insights and statistics about your projects",
+    "timePeriod": "Time period",
+    "periods": {
+      "month": "Last Month",
+      "quarter": "Last Quarter",
+      "year": "Last Year",
+      "all": "All Time"
+    },
+    "stats": {
+      "totalProjects": "Total Projects",
+      "completionRate": "Completion Rate",
+      "avgDuration": "Avg. Duration",
+      "avgDurationDescription": "From start to completion",
+      "activeProjects": "Active Projects",
+      "vsLastPeriod": "vs last period",
+      "newThisMonth": "new this month"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "abandonment": "Abandonment",
+      "tags": "Tags"
+    },
+    "monthlyActivity": {
+      "title": "Monthly Activity",
+      "description": "Projects created, completed, and abandoned over time",
+      "created": "Created",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "statusDistribution": {
+      "title": "Status Distribution",
+      "description": "Current project status breakdown"
+    },
+    "keyMetrics": {
+      "title": "Key Metrics",
+      "description": "Performance indicators",
+      "projectsStarted": "Projects Started This Year",
+      "projectsCompleted": "Projects Completed This Year",
+      "revivalSuccessRate": "Revival Success Rate",
+      "avgTimeToAbandon": "Avg. Time to Abandon"
+    },
+    "abandonmentReasons": {
+      "title": "Top Abandonment Reasons",
+      "description": "Why projects are abandoned"
+    },
+    "insights": {
+      "title": "Insights",
+      "description": "Patterns and recommendations",
+      "keyFinding": {
+        "title": "Key Finding",
+        "description": "Projects without clear milestones are 2.5x more likely to be abandoned."
+      },
+      "timingPattern": {
+        "title": "Timing Pattern",
+        "description": "Most abandonments happen in the 2nd month. Consider setting early checkpoints."
+      },
+      "recommendation": {
+        "title": "Recommendation",
+        "description": "Break large projects into smaller deliverables to improve completion rate."
+      }
+    },
+    "topTags": {
+      "title": "Most Used Technologies",
+      "description": "Tags across all projects"
+    },
+    "techSuccessRate": {
+      "title": "Technology Success Rate",
+      "description": "Completion rate by technology",
+      "completion": "completion"
+    }
+  },
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
+  }
+}

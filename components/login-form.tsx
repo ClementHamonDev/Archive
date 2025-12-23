@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,8 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
+  const tErrors = useTranslations("auth.errors");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,12 +38,12 @@ export function LoginForm() {
       });
 
       if (result.error) {
-        setError(result.error.message || "Login failed");
+        setError(result.error.message || tErrors("loginFailed"));
       } else {
         router.push("/home");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : tErrors("generic"));
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +58,7 @@ export function LoginForm() {
         provider: "github",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "GitHub login failed");
+      setError(err instanceof Error ? err.message : tErrors("githubFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -65,8 +68,8 @@ export function LoginForm() {
     <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome</CardTitle>
-          <CardDescription>Login to your account</CardDescription>
+          <CardTitle className="text-xl">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -81,7 +84,7 @@ export function LoginForm() {
             <form onSubmit={signInWithEmailHandler} className="space-y-4">
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -96,7 +99,7 @@ export function LoginForm() {
 
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("password")}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -110,7 +113,7 @@ export function LoginForm() {
               </FieldGroup>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login with Email"}
+                {isLoading ? t("submitting") : t("submit")}
               </Button>
             </form>
 
@@ -120,7 +123,9 @@ export function LoginForm() {
                 <div className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  {t("orContinueWith")}
+                </span>
               </div>
             </div>
 
@@ -134,7 +139,7 @@ export function LoginForm() {
                   disabled={isLoading}
                   className="w-full"
                 >
-                  {isLoading ? "Logging in..." : "Login with GitHub"}
+                  {isLoading ? t("submitting") : t("github")}
                 </Button>
               </Field>
             </FieldGroup>
@@ -144,9 +149,9 @@ export function LoginForm() {
 
       {/* Sign Up Link */}
       <div className="text-center text-sm">
-        Don't have an account?{" "}
+        {t("noAccount")}{" "}
         <a href="/signup" className="text-primary hover:underline">
-          Sign up
+          {t("signUp")}
         </a>
       </div>
     </div>

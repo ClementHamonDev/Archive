@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSession } from "@/lib/auth";
 import { getProjects, getProjectStats } from "@/lib/actions/projects";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   Activity,
   Archive,
@@ -25,7 +26,7 @@ import {
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -33,6 +34,10 @@ export default async function DashboardPage() {
   if (!session) {
     redirect("/login");
   }
+
+  const t = await getTranslations("dashboard");
+  const locale = await getLocale();
+  const dateLocale = locale === "fr" ? fr : enUS;
 
   const user = {
     name: session.user.name || "User",
@@ -64,7 +69,7 @@ export default async function DashboardPage() {
           project: project.name,
           date: formatDistanceToNow(new Date(project.abandonedAt), {
             addSuffix: true,
-            locale: fr,
+            locale: dateLocale,
           }),
           timestamp: new Date(project.abandonedAt),
         };
@@ -75,7 +80,7 @@ export default async function DashboardPage() {
           project: project.name,
           date: formatDistanceToNow(new Date(project.endDate), {
             addSuffix: true,
-            locale: fr,
+            locale: dateLocale,
           }),
           timestamp: new Date(project.endDate),
         };
@@ -85,7 +90,7 @@ export default async function DashboardPage() {
         project: project.name,
         date: formatDistanceToNow(new Date(project.createdAt), {
           addSuffix: true,
-          locale: fr,
+          locale: dateLocale,
         }),
         timestamp: new Date(project.createdAt),
       };
@@ -116,15 +121,15 @@ export default async function DashboardPage() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground">
-              Bienvenue {user.name} ! Voici un aperçu de vos projets.
+              {t("welcome", { name: user.name })}
             </p>
           </div>
           <Link href="/projects/new">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Nouveau projet
+              {t("newProject")}
             </Button>
           </Link>
         </div>
@@ -132,35 +137,35 @@ export default async function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
-            title="Total Projets"
+            title={t("stats.totalProjects")}
             value={stats.total}
             icon={FolderKanban}
           />
           <StatsCard
-            title="Actifs"
+            title={t("stats.active")}
             value={stats.active}
             icon={Activity}
-            description="En cours"
+            description={t("stats.activeDescription")}
           />
           <StatsCard
-            title="Terminés"
+            title={t("stats.completed")}
             value={stats.completed}
             icon={CheckCircle2}
             trend={
               stats.total > 0
                 ? {
                     value: stats.completionRate,
-                    label: "taux de complétion",
+                    label: t("stats.completionRate"),
                     positive: stats.completionRate >= 50,
                   }
                 : undefined
             }
           />
           <StatsCard
-            title="Abandonnés"
+            title={t("stats.abandoned")}
             value={stats.abandoned}
             icon={Pause}
-            description="En pause ou arrêtés"
+            description={t("stats.abandonedDescription")}
           />
         </div>
 
@@ -171,10 +176,10 @@ export default async function DashboardPage() {
             {projects.length === 0 ? (
               <EmptyState
                 icon={FolderKanban}
-                title="Aucun projet"
-                description="Commencez par créer votre premier projet pour suivre vos idées et votre progression."
+                title={t("noProjects.title")}
+                description={t("noProjects.description")}
                 action={{
-                  label: "Créer un projet",
+                  label: t("noProjects.action"),
                   href: "/projects/new",
                 }}
               />
@@ -184,20 +189,20 @@ export default async function DashboardPage() {
                   <TabsList>
                     <TabsTrigger value="active" className="gap-2">
                       <Activity className="h-4 w-4" />
-                      Actifs ({activeProjects.length})
+                      {t("stats.active")} ({activeProjects.length})
                     </TabsTrigger>
                     <TabsTrigger value="completed" className="gap-2">
                       <CheckCircle2 className="h-4 w-4" />
-                      Terminés ({completedProjects.length})
+                      {t("stats.completed")} ({completedProjects.length})
                     </TabsTrigger>
                     <TabsTrigger value="abandoned" className="gap-2">
                       <Pause className="h-4 w-4" />
-                      Abandonnés ({abandonedProjects.length})
+                      {t("stats.abandoned")} ({abandonedProjects.length})
                     </TabsTrigger>
                   </TabsList>
                   <Link href="/projects">
                     <Button variant="ghost" size="sm">
-                      Voir tout
+                      {t("recentActivity.title")}
                     </Button>
                   </Link>
                 </div>
@@ -215,7 +220,7 @@ export default async function DashboardPage() {
                     <Card className="p-8 text-center">
                       <Archive className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">
-                        Aucun projet actif
+                        {t("noActiveProjects")}
                       </p>
                     </Card>
                   )}
@@ -234,7 +239,7 @@ export default async function DashboardPage() {
                     <Card className="p-8 text-center">
                       <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">
-                        Aucun projet terminé
+                        {t("noCompletedProjects")}
                       </p>
                     </Card>
                   )}
@@ -253,7 +258,7 @@ export default async function DashboardPage() {
                     <Card className="p-8 text-center">
                       <Pause className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">
-                        Aucun projet abandonné
+                        {t("noAbandonedProjects")}
                       </p>
                     </Card>
                   )}
@@ -269,13 +274,13 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Aperçu rapide
+                  {t("quickActions.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Taux de complétion
+                    {t("stats.completionRate")}
                   </span>
                   <span className="font-semibold">{stats.completionRate}%</span>
                 </div>
@@ -289,13 +294,13 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-sm text-muted-foreground">
-                    Projets actifs
+                    {t("stats.active")}
                   </span>
                   <span className="font-semibold">{stats.active}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Total des projets
+                    {t("stats.totalProjects")}
                   </span>
                   <span className="font-semibold">{stats.total}</span>
                 </div>
@@ -305,15 +310,17 @@ export default async function DashboardPage() {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Activité récente</CardTitle>
+                <CardTitle className="text-lg">
+                  {t("recentActivity.title")}
+                </CardTitle>
                 <CardDescription>
-                  Vos dernières mises à jour de projets
+                  {t("recentActivity.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {recentActivity.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucune activité récente
+                    {t("recentActivity.noActivity")}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -331,11 +338,7 @@ export default async function DashboardPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm">
                             <span className="capitalize">
-                              {activity.type === "created"
-                                ? "Créé"
-                                : activity.type === "completed"
-                                  ? "Terminé"
-                                  : "Abandonné"}
+                              {t(`recentActivity.${activity.type}`)}
                             </span>{" "}
                             <span className="font-medium">
                               {activity.project}

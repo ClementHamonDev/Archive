@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,8 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export function SignupForm() {
+  const t = useTranslations("auth.signup");
+  const tErrors = useTranslations("auth.errors");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,19 +30,19 @@ export function SignupForm() {
 
   const validateForm = () => {
     if (!name.trim()) {
-      setError("Name is required");
+      setError(tErrors("nameRequired"));
       return false;
     }
     if (!email.trim()) {
-      setError("Email is required");
+      setError(tErrors("emailRequired"));
       return false;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      setError(tErrors("passwordMinLength"));
       return false;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(tErrors("passwordsNoMatch"));
       return false;
     }
     return true;
@@ -61,12 +64,12 @@ export function SignupForm() {
       });
 
       if (result.error) {
-        setError(result.error.message || "Sign up failed");
+        setError(result.error.message || tErrors("signupFailed"));
       } else {
         router.push("/home");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : tErrors("generic"));
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +84,7 @@ export function SignupForm() {
         provider: "github",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "GitHub sign up failed");
+      setError(err instanceof Error ? err.message : tErrors("githubFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -91,8 +94,8 @@ export function SignupForm() {
     <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Create Account</CardTitle>
-          <CardDescription>Sign up to get started</CardDescription>
+          <CardTitle className="text-xl">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -107,7 +110,7 @@ export function SignupForm() {
             <form onSubmit={signUpWithEmailHandler} className="space-y-4">
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">{t("name")}</Label>
                   <Input
                     id="name"
                     type="text"
@@ -122,7 +125,7 @@ export function SignupForm() {
 
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -137,7 +140,7 @@ export function SignupForm() {
 
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("password")}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -152,7 +155,9 @@ export function SignupForm() {
 
               <FieldGroup>
                 <Field>
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Label htmlFor="confirm-password">
+                    {t("confirmPassword")}
+                  </Label>
                   <Input
                     id="confirm-password"
                     type="password"
@@ -166,7 +171,7 @@ export function SignupForm() {
               </FieldGroup>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Sign up with Email"}
+                {isLoading ? t("submitting") : t("submit")}
               </Button>
             </form>
 
@@ -176,7 +181,9 @@ export function SignupForm() {
                 <div className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  {t("orContinueWith")}
+                </span>
               </div>
             </div>
 
@@ -190,7 +197,7 @@ export function SignupForm() {
                   disabled={isLoading}
                   className="w-full"
                 >
-                  {isLoading ? "Signing up..." : "Sign up with GitHub"}
+                  {isLoading ? t("submitting") : t("github")}
                 </Button>
               </Field>
             </FieldGroup>
@@ -200,9 +207,9 @@ export function SignupForm() {
 
       {/* Login Link */}
       <div className="text-center text-sm">
-        Already have an account?{" "}
+        {t("hasAccount")}{" "}
         <a href="/login" className="text-primary hover:underline">
-          Login
+          {t("login")}
         </a>
       </div>
     </div>

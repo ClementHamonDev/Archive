@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +26,8 @@ export function DeleteProjectDialog({
   projectName,
 }: DeleteProjectDialogProps) {
   const router = useRouter();
+  const t = useTranslations("project.delete");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -51,17 +54,14 @@ export function DeleteProjectDialog({
           className="gap-2 text-destructive hover:text-destructive"
         >
           <Trash2 className="h-4 w-4" />
-          Supprimer
+          {tCommon("delete")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Supprimer le projet</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Êtes-vous sûr de vouloir supprimer le projet{" "}
-            <span className="font-semibold">&quot;{projectName}&quot;</span> ?
-            Cette action est irréversible et supprimera également tous les tags,
-            analyses d&apos;abandon et historique de relances associés.
+            {t("description", { name: projectName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -77,7 +77,7 @@ export function DeleteProjectDialog({
             onClick={() => setOpen(false)}
             disabled={isPending}
           >
-            Annuler
+            {tCommon("cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -87,10 +87,10 @@ export function DeleteProjectDialog({
             {isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Suppression...
+                {t("deleting")}
               </>
             ) : (
-              "Supprimer"
+              t("confirm")
             )}
           </Button>
         </DialogFooter>

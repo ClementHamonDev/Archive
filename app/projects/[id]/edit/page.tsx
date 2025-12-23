@@ -43,6 +43,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, useEffect } from "react";
 import { getProject, updateProject } from "@/lib/actions/projects";
 import { authClient } from "@/lib/auth-client";
+import { useTranslations } from "next-intl";
 
 const suggestedTags = [
   "React",
@@ -67,6 +68,8 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     authClient.useSession();
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("projectForm");
+  const tCommon = useTranslations("common");
 
   const [projectId, setProjectId] = useState<string>("");
   const [name, setName] = useState("");
@@ -194,14 +197,12 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour au projet
+          {t("backToProject")}
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Modifier le projet</h1>
-          <p className="text-muted-foreground">
-            Mettez à jour les informations de votre projet.
-          </p>
+          <h1 className="text-3xl font-bold mb-2">{t("editTitle")}</h1>
+          <p className="text-muted-foreground">{t("editSubtitle")}</p>
         </div>
 
         {error && (
@@ -216,32 +217,34 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Archive className="h-5 w-5" />
-                Informations générales
+                {t("sections.general.title")}
               </CardTitle>
               <CardDescription>
-                Les détails essentiels de votre projet
+                {t("sections.general.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Nom du projet *</Label>
+                <Label htmlFor="name">{t("fields.name.label")} *</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Mon super projet"
+                  placeholder={t("fields.name.placeholder")}
                   required
                   disabled={isPending}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">
+                  {t("fields.description.label")}
+                </Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Décrivez votre projet..."
+                  placeholder={t("fields.description.placeholder")}
                   rows={4}
                   disabled={isPending}
                 />
@@ -249,7 +252,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="status">Statut</Label>
+                  <Label htmlFor="status">{t("fields.status.label")}</Label>
                   <Select
                     value={status}
                     onValueChange={(value) =>
@@ -258,12 +261,20 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                     disabled={isPending}
                   >
                     <SelectTrigger id="status">
-                      <SelectValue placeholder="Sélectionner un statut" />
+                      <SelectValue
+                        placeholder={t("fields.status.placeholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ACTIVE">Actif</SelectItem>
-                      <SelectItem value="COMPLETED">Terminé</SelectItem>
-                      <SelectItem value="ABANDONED">Abandonné</SelectItem>
+                      <SelectItem value="ACTIVE">
+                        {tCommon("statuses.active")}
+                      </SelectItem>
+                      <SelectItem value="COMPLETED">
+                        {tCommon("statuses.completed")}
+                      </SelectItem>
+                      <SelectItem value="ABANDONED">
+                        {tCommon("statuses.abandoned")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -274,7 +285,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                     className="flex items-center gap-2"
                   >
                     <Calendar className="h-4 w-4" />
-                    Date de début *
+                    {t("fields.startDate.label")} *
                   </Label>
                   <Input
                     id="startDate"
@@ -298,12 +309,12 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                     ) : (
                       <EyeOff className="h-4 w-4" />
                     )}
-                    Visibilité
+                    {t("fields.visibility.label")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
                     {isPublic
-                      ? "Visible publiquement"
-                      : "Visible uniquement par vous"}
+                      ? t("fields.visibility.public")
+                      : t("fields.visibility.private")}
                   </p>
                 </div>
                 <Switch
@@ -321,10 +332,10 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Link2 className="h-5 w-5" />
-                Liens
+                {t("sections.links.title")}
               </CardTitle>
               <CardDescription>
-                URLs du dépôt et du site en ligne
+                {t("sections.links.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -334,14 +345,14 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                   className="flex items-center gap-2"
                 >
                   <Github className="h-4 w-4" />
-                  URL du dépôt
+                  {t("fields.repositoryUrl.label")}
                 </Label>
                 <Input
                   id="repositoryUrl"
                   type="url"
                   value={repositoryUrl}
                   onChange={(e) => setRepositoryUrl(e.target.value)}
-                  placeholder="https://github.com/username/project"
+                  placeholder={t("fields.repositoryUrl.placeholder")}
                   disabled={isPending}
                 />
               </div>
@@ -349,14 +360,14 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
               <div className="space-y-2">
                 <Label htmlFor="liveUrl" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  URL du site
+                  {t("fields.liveUrl.label")}
                 </Label>
                 <Input
                   id="liveUrl"
                   type="url"
                   value={liveUrl}
                   onChange={(e) => setLiveUrl(e.target.value)}
-                  placeholder="https://monprojet.com"
+                  placeholder={t("fields.liveUrl.placeholder")}
                   disabled={isPending}
                 />
               </div>
@@ -368,10 +379,10 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5" />
-                Tags
+                {t("sections.tags.title")}
               </CardTitle>
               <CardDescription>
-                Catégorisez votre projet (max. 10 tags)
+                {t("sections.tags.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -395,7 +406,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
 
               <div className="flex gap-2">
                 <Input
-                  placeholder="Ajouter un tag..."
+                  placeholder={t("sections.tags.addPlaceholder")}
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -420,7 +431,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                 0 && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Suggestions :
+                    {t("sections.tags.suggestions")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {suggestedTags
@@ -454,7 +465,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                 className="w-full sm:w-auto"
                 disabled={isPending}
               >
-                Annuler
+                {tCommon("cancel")}
               </Button>
             </Link>
             <Button
@@ -465,12 +476,12 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Enregistrement...
+                  {t("saving")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Enregistrer
+                  {t("saveButton")}
                 </>
               )}
             </Button>

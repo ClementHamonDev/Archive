@@ -2,6 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export function LogoutButton({
   className,
 }: LogoutButtonProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   const handleLogout = async () => {
     try {
@@ -41,7 +43,7 @@ export function LogoutButton({
         )}
       >
         <LogOut className="h-4 w-4" />
-        Log out
+        {t("logout")}
       </button>
     );
   }
@@ -57,7 +59,7 @@ export function LogoutButton({
         )}
       >
         <LogOut className="h-4 w-4" />
-        Log out
+        {t("logout")}
       </Button>
     );
   }
@@ -65,7 +67,7 @@ export function LogoutButton({
   return (
     <Button variant="outline" onClick={handleLogout} className={className}>
       <LogOut className="h-4 w-4 mr-2" />
-      Logout
+      {t("logout")}
     </Button>
   );
 }

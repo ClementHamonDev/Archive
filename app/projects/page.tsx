@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { getSession } from "@/lib/auth";
 import { getProjects } from "@/lib/actions/projects";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   Activity,
   CheckCircle2,
@@ -34,6 +35,8 @@ export default async function ProjectsPage() {
     redirect("/login");
   }
 
+  const t = await getTranslations("projects");
+
   const user = {
     name: session.user.name || "User",
     email: session.user.email,
@@ -50,7 +53,7 @@ export default async function ProjectsPage() {
 
   // Get all unique tags
   const allTags = Array.from(
-    new Set(projects.flatMap((p) => p.tags.map((t) => t.label)))
+    new Set(projects.flatMap((p) => p.tags.map((t) => t.label))),
   );
 
   // Helper to convert project to ProjectCard props
@@ -76,15 +79,13 @@ export default async function ProjectsPage() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Projets</h1>
-            <p className="text-muted-foreground">
-              Gérez et organisez tous vos projets
-            </p>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <Link href="/projects/new">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Nouveau projet
+              {t("newProject")}
             </Button>
           </Link>
         </div>
@@ -92,10 +93,10 @@ export default async function ProjectsPage() {
         {projects.length === 0 ? (
           <EmptyState
             icon={FolderKanban}
-            title="Aucun projet"
-            description="Créez votre premier projet pour commencer à suivre votre travail"
+            title={t("noProjects.title")}
+            description={t("noProjects.description")}
             action={{
-              label: "Créer un projet",
+              label: t("noProjects.action"),
               href: "/projects/new",
             }}
           />
@@ -105,29 +106,41 @@ export default async function ProjectsPage() {
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Rechercher des projets..." className="pl-9" />
+                <Input placeholder={t("searchPlaceholder")} className="pl-9" />
               </div>
               <div className="flex gap-2">
                 <Select defaultValue="all">
                   <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Statut" />
+                    <SelectValue placeholder={t("filters.status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="active">Actifs</SelectItem>
-                    <SelectItem value="completed">Terminés</SelectItem>
-                    <SelectItem value="abandoned">Abandonnés</SelectItem>
+                    <SelectItem value="all">{t("filters.all")}</SelectItem>
+                    <SelectItem value="active">
+                      {t("filters.active")}
+                    </SelectItem>
+                    <SelectItem value="completed">
+                      {t("filters.completed")}
+                    </SelectItem>
+                    <SelectItem value="abandoned">
+                      {t("filters.abandoned")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <Select defaultValue="newest">
                   <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Trier par" />
+                    <SelectValue placeholder={t("filters.sortBy")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Plus récents</SelectItem>
-                    <SelectItem value="oldest">Plus anciens</SelectItem>
-                    <SelectItem value="name">Nom A-Z</SelectItem>
-                    <SelectItem value="name-desc">Nom Z-A</SelectItem>
+                    <SelectItem value="newest">
+                      {t("filters.newest")}
+                    </SelectItem>
+                    <SelectItem value="oldest">
+                      {t("filters.oldest")}
+                    </SelectItem>
+                    <SelectItem value="name">{t("filters.nameAsc")}</SelectItem>
+                    <SelectItem value="name-desc">
+                      {t("filters.nameDesc")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" size="icon">
@@ -140,7 +153,7 @@ export default async function ProjectsPage() {
             {allTags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 <Badge variant="default" className="cursor-pointer">
-                  Tous
+                  {t("filters.all")}
                 </Badge>
                 {allTags.slice(0, 8).map((tag) => (
                   <Badge
@@ -164,19 +177,19 @@ export default async function ProjectsPage() {
               <TabsList>
                 <TabsTrigger value="all" className="gap-2">
                   <FolderKanban className="h-4 w-4" />
-                  Tous ({projects.length})
+                  {t("tabs.all")} ({projects.length})
                 </TabsTrigger>
                 <TabsTrigger value="active" className="gap-2">
                   <Activity className="h-4 w-4" />
-                  Actifs ({activeProjects.length})
+                  {t("tabs.active")} ({activeProjects.length})
                 </TabsTrigger>
                 <TabsTrigger value="completed" className="gap-2">
                   <CheckCircle2 className="h-4 w-4" />
-                  Terminés ({completedProjects.length})
+                  {t("tabs.completed")} ({completedProjects.length})
                 </TabsTrigger>
                 <TabsTrigger value="abandoned" className="gap-2">
                   <Pause className="h-4 w-4" />
-                  Abandonnés ({abandonedProjects.length})
+                  {t("tabs.abandoned")} ({abandonedProjects.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -204,7 +217,9 @@ export default async function ProjectsPage() {
                 ) : (
                   <Card className="p-12 text-center">
                     <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">Aucun projet actif</p>
+                    <p className="text-muted-foreground">
+                      {t("status.active")}
+                    </p>
                   </Card>
                 )}
               </TabsContent>
@@ -223,7 +238,7 @@ export default async function ProjectsPage() {
                   <Card className="p-12 text-center">
                     <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
-                      Aucun projet terminé
+                      {t("status.completed")}
                     </p>
                   </Card>
                 )}
@@ -243,7 +258,7 @@ export default async function ProjectsPage() {
                   <Card className="p-12 text-center">
                     <Pause className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
-                      Aucun projet abandonné
+                      {t("status.abandoned")}
                     </p>
                   </Card>
                 )}

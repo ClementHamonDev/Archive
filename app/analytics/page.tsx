@@ -30,6 +30,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 const abandonmentReasons = [
   { reason: "Lost interest", count: 5, percentage: 35 },
@@ -59,6 +60,8 @@ const topTags = [
 
 export default async function AnalyticsPage() {
   const session = await getSession();
+  const t = await getTranslations("analytics");
+  const tCommon = await getTranslations("common");
 
   if (!session) {
     redirect("/login");
@@ -77,20 +80,18 @@ export default async function AnalyticsPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Analytics</h1>
-            <p className="text-muted-foreground">
-              Insights and statistics about your projects
-            </p>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <Select defaultValue="year">
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Time period" />
+              <SelectValue placeholder={t("timePeriod")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="month">Last Month</SelectItem>
-              <SelectItem value="quarter">Last Quarter</SelectItem>
-              <SelectItem value="year">Last Year</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="month">{t("periods.month")}</SelectItem>
+              <SelectItem value="quarter">{t("periods.quarter")}</SelectItem>
+              <SelectItem value="year">{t("periods.year")}</SelectItem>
+              <SelectItem value="all">{t("periods.all")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -98,28 +99,32 @@ export default async function AnalyticsPage() {
         {/* Stats Overview */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatsCard
-            title="Total Projects"
+            title={t("stats.totalProjects")}
             value={24}
             icon={FolderKanban}
-            trend={{ value: 12, label: "vs last period", positive: true }}
+            trend={{
+              value: 12,
+              label: t("stats.vsLastPeriod"),
+              positive: true,
+            }}
           />
           <StatsCard
-            title="Completion Rate"
+            title={t("stats.completionRate")}
             value="62%"
             icon={CheckCircle2}
-            trend={{ value: 5, label: "vs last period", positive: true }}
+            trend={{ value: 5, label: t("stats.vsLastPeriod"), positive: true }}
           />
           <StatsCard
-            title="Avg. Duration"
+            title={t("stats.avgDuration")}
             value="4.2 mo"
             icon={Calendar}
-            description="From start to completion"
+            description={t("stats.avgDurationDescription")}
           />
           <StatsCard
-            title="Active Projects"
+            title={t("stats.activeProjects")}
             value={6}
             icon={Play}
-            trend={{ value: 2, label: "new this month", positive: true }}
+            trend={{ value: 2, label: t("stats.newThisMonth"), positive: true }}
           />
         </div>
 
@@ -127,15 +132,15 @@ export default async function AnalyticsPage() {
           <TabsList>
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="h-4 w-4" />
-              Overview
+              {t("tabs.overview")}
             </TabsTrigger>
             <TabsTrigger value="abandonment" className="gap-2">
               <Pause className="h-4 w-4" />
-              Abandonment
+              {t("tabs.abandonment")}
             </TabsTrigger>
             <TabsTrigger value="tags" className="gap-2">
               <PieChart className="h-4 w-4" />
-              Tags
+              {t("tabs.tags")}
             </TabsTrigger>
           </TabsList>
 
@@ -144,9 +149,9 @@ export default async function AnalyticsPage() {
               {/* Monthly Activity Chart (Visual representation) */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Monthly Activity</CardTitle>
+                  <CardTitle>{t("monthlyActivity.title")}</CardTitle>
                   <CardDescription>
-                    Projects created, completed, and abandoned over time
+                    {t("monthlyActivity.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -160,17 +165,17 @@ export default async function AnalyticsPage() {
                           <div
                             className="h-8 bg-blue-500 rounded-l"
                             style={{ width: `${data.created * 30}px` }}
-                            title={`Created: ${data.created}`}
+                            title={`${t("monthlyActivity.created")}: ${data.created}`}
                           />
                           <div
                             className="h-8 bg-green-500"
                             style={{ width: `${data.completed * 30}px` }}
-                            title={`Completed: ${data.completed}`}
+                            title={`${t("monthlyActivity.completed")}: ${data.completed}`}
                           />
                           <div
                             className="h-8 bg-red-400 rounded-r"
                             style={{ width: `${data.abandoned * 30}px` }}
-                            title={`Abandoned: ${data.abandoned}`}
+                            title={`${t("monthlyActivity.abandoned")}: ${data.abandoned}`}
                           />
                         </div>
                         <div className="flex gap-4 text-sm">
@@ -187,19 +192,19 @@ export default async function AnalyticsPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-blue-500 rounded" />
                       <span className="text-sm text-muted-foreground">
-                        Created
+                        {t("monthlyActivity.created")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded" />
                       <span className="text-sm text-muted-foreground">
-                        Completed
+                        {t("monthlyActivity.completed")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-red-400 rounded" />
                       <span className="text-sm text-muted-foreground">
-                        Abandoned
+                        {t("monthlyActivity.abandoned")}
                       </span>
                     </div>
                   </div>
@@ -209,16 +214,16 @@ export default async function AnalyticsPage() {
               {/* Project Status Distribution */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Status Distribution</CardTitle>
+                  <CardTitle>{t("statusDistribution.title")}</CardTitle>
                   <CardDescription>
-                    Current project status breakdown
+                    {t("statusDistribution.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Play className="h-4 w-4 text-green-500" />
-                      <span>Active</span>
+                      <span>{tCommon("statuses.active")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">6</span>
@@ -230,7 +235,7 @@ export default async function AnalyticsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-blue-500" />
-                      <span>Completed</span>
+                      <span>{tCommon("statuses.completed")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">15</span>
@@ -242,7 +247,7 @@ export default async function AnalyticsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Pause className="h-4 w-4 text-red-500" />
-                      <span>Abandoned</span>
+                      <span>{tCommon("statuses.abandoned")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">3</span>
@@ -256,13 +261,15 @@ export default async function AnalyticsPage() {
               {/* Key Metrics */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Key Metrics</CardTitle>
-                  <CardDescription>Performance indicators</CardDescription>
+                  <CardTitle>{t("keyMetrics.title")}</CardTitle>
+                  <CardDescription>
+                    {t("keyMetrics.description")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Projects Started This Year
+                      {t("keyMetrics.projectsStarted")}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-lg">14</span>
@@ -271,7 +278,7 @@ export default async function AnalyticsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Projects Completed This Year
+                      {t("keyMetrics.projectsCompleted")}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-lg">7</span>
@@ -280,7 +287,7 @@ export default async function AnalyticsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Revival Success Rate
+                      {t("keyMetrics.revivalSuccessRate")}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-lg">67%</span>
@@ -289,7 +296,7 @@ export default async function AnalyticsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Avg. Time to Abandon
+                      {t("keyMetrics.avgTimeToAbandon")}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-lg">2.3 mo</span>
@@ -306,8 +313,10 @@ export default async function AnalyticsPage() {
               {/* Abandonment Reasons */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Top Abandonment Reasons</CardTitle>
-                  <CardDescription>Why projects were abandoned</CardDescription>
+                  <CardTitle>{t("abandonmentReasons.title")}</CardTitle>
+                  <CardDescription>
+                    {t("abandonmentReasons.description")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {abandonmentReasons.map((item, index) => (
@@ -335,31 +344,32 @@ export default async function AnalyticsPage() {
               {/* Abandonment Insights */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Insights</CardTitle>
-                  <CardDescription>
-                    Patterns and recommendations
-                  </CardDescription>
+                  <CardTitle>{t("insights.title")}</CardTitle>
+                  <CardDescription>{t("insights.description")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">🎯 Key Finding</h4>
+                    <h4 className="font-medium mb-2">
+                      🎯 {t("insights.keyFinding.title")}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      Projects without clear milestones are 2.5x more likely to
-                      be abandoned.
+                      {t("insights.keyFinding.description")}
                     </p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">⏰ Timing Pattern</h4>
+                    <h4 className="font-medium mb-2">
+                      ⏰ {t("insights.timingPattern.title")}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      Most abandonments happen in the 2nd month. Consider
-                      setting early checkpoints.
+                      {t("insights.timingPattern.description")}
                     </p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">💡 Recommendation</h4>
+                    <h4 className="font-medium mb-2">
+                      💡 {t("insights.recommendation.title")}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      Break large projects into smaller deliverables to improve
-                      completion rate.
+                      {t("insights.recommendation.description")}
                     </p>
                   </div>
                 </CardContent>
@@ -372,8 +382,8 @@ export default async function AnalyticsPage() {
               {/* Top Tags */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Most Used Technologies</CardTitle>
-                  <CardDescription>Tags across all projects</CardDescription>
+                  <CardTitle>{t("topTags.title")}</CardTitle>
+                  <CardDescription>{t("topTags.description")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -401,9 +411,9 @@ export default async function AnalyticsPage() {
               {/* Tag Distribution by Status */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Technology Success Rate</CardTitle>
+                  <CardTitle>{t("techSuccessRate.title")}</CardTitle>
                   <CardDescription>
-                    Completion rate by technology
+                    {t("techSuccessRate.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -417,7 +427,7 @@ export default async function AnalyticsPage() {
                           85%
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          completion
+                          {t("techSuccessRate.completion")}
                         </span>
                       </div>
                     </div>
@@ -430,7 +440,7 @@ export default async function AnalyticsPage() {
                           72%
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          completion
+                          {t("techSuccessRate.completion")}
                         </span>
                       </div>
                     </div>
@@ -443,7 +453,7 @@ export default async function AnalyticsPage() {
                           58%
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          completion
+                          {t("techSuccessRate.completion")}
                         </span>
                       </div>
                     </div>
@@ -454,7 +464,7 @@ export default async function AnalyticsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-red-600 font-semibold">40%</span>
                         <span className="text-sm text-muted-foreground">
-                          completion
+                          {t("techSuccessRate.completion")}
                         </span>
                       </div>
                     </div>

@@ -33,25 +33,23 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
 
 const statusConfig = {
   ACTIVE: {
-    label: "Actif",
     variant: "default" as const,
     icon: Play,
     color: "text-green-600",
     bgColor: "bg-green-100",
   },
   COMPLETED: {
-    label: "Terminé",
     variant: "secondary" as const,
     icon: CheckCircle2,
     color: "text-blue-600",
     bgColor: "bg-blue-100",
   },
   ABANDONED: {
-    label: "Abandonné",
     variant: "destructive" as const,
     icon: Pause,
     color: "text-red-600",
@@ -59,15 +57,15 @@ const statusConfig = {
   },
 };
 
-const abandonmentReasonLabels: Record<string, string> = {
-  TIME: "Manque de temps",
-  MOTIVATION: "Perte de motivation",
-  TECHNICAL: "Difficultés techniques",
-  SCOPE: "Scope trop large",
-  MARKET: "Plus de marché",
-  ORGANIZATION: "Problèmes d'organisation",
-  BURNOUT: "Burnout",
-  OTHER: "Autre",
+const abandonmentReasonKeys: Record<string, string> = {
+  TIME: "time",
+  MOTIVATION: "motivation",
+  TECHNICAL: "technical",
+  SCOPE: "scope",
+  MARKET: "market",
+  ORGANIZATION: "organization",
+  BURNOUT: "burnout",
+  OTHER: "other",
 };
 
 interface ProjectPageProps {
@@ -77,6 +75,10 @@ interface ProjectPageProps {
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
   const session = await getSession();
+  const t = await getTranslations("project");
+  const tCommon = await getTranslations("common");
+  const locale = await getLocale();
+  const dateLocale = locale === "fr" ? fr : enUS;
 
   if (!session) {
     redirect("/login");
@@ -97,6 +99,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const project = projectResult.data;
   const status = statusConfig[project.status];
   const StatusIcon = status.icon;
+  const statusLabel = tCommon(`statuses.${project.status.toLowerCase()}`);
 
   const timeline: Array<{
     date: Date;
@@ -105,7 +108,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }> = [
     {
       date: project.createdAt,
-      event: "Projet créé",
+      event: t("timeline.created"),
       type: "created",
     },
   ];
@@ -113,7 +116,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   if (project.status === "COMPLETED" && project.endDate) {
     timeline.unshift({
       date: project.endDate,
-      event: "Projet terminé",
+      event: t("timeline.completed"),
       type: "milestone",
     });
   }
@@ -121,7 +124,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   if (project.status === "ABANDONED" && project.abandonedAt) {
     timeline.unshift({
       date: project.abandonedAt,
-      event: "Projet abandonné",
+      event: t("timeline.abandoned"),
       type: "abandoned",
     });
   }
@@ -129,7 +132,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   project.revivals.forEach((revival) => {
     timeline.unshift({
       date: revival.revivedAt,
-      event: revival.note || "Projet relancé",
+      event: revival.note || t("timeline.revived"),
       type: "revival",
     });
   });
@@ -148,7 +151,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour aux projets
+          {t("backToProjects")}
         </Link>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -161,27 +164,27 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       <CardTitle className="text-2xl">{project.name}</CardTitle>
                       <Badge variant={status.variant} className="gap-1">
                         <StatusIcon className="h-3 w-3" />
-                        {status.label}
+                        {statusLabel}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        Commencé le{" "}
+                        {t("startedOn")}{" "}
                         {format(new Date(project.startDate), "d MMMM yyyy", {
-                          locale: fr,
+                          locale: dateLocale,
                         })}
                       </span>
                       <span className="flex items-center gap-1">
                         {project.isPublic ? (
                           <>
                             <Eye className="h-4 w-4" />
-                            Public
+                            {t("visibility.public")}
                           </>
                         ) : (
                           <>
                             <EyeOff className="h-4 w-4" />
-                            Privé
+                            {t("visibility.private")}
                           </>
                         )}
                       </span>
@@ -196,7 +199,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     >
                       <Link href={`/projects/${project.id}/edit`}>
                         <Edit className="h-4 w-4" />
-                        Modifier
+                        {tCommon("edit")}
                       </Link>
                     </Button>
                     <DeleteProjectDialog
@@ -220,9 +223,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 )}
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Description</h3>
+                  <h3 className="font-semibold">{t("description")}</h3>
                   <p className="text-muted-foreground">
-                    {project.description || "Aucune description fournie."}
+                    {project.description || t("noDescription")}
                   </p>
                 </div>
 
@@ -230,7 +233,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <div className="mt-6 space-y-4">
                     <h3 className="font-semibold flex items-center gap-2">
                       <Tag className="h-4 w-4" />
-                      Technologies
+                      {t("technologies")}
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {project.tags.map((tag) => (
@@ -253,7 +256,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                           className="gap-2"
                         >
                           <Github className="h-4 w-4" />
-                          Voir le code
+                          {t("viewCode")}
                         </a>
                       </Button>
                     )}
@@ -266,7 +269,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                           className="gap-2"
                         >
                           <ExternalLink className="h-4 w-4" />
-                          Voir en ligne
+                          {t("viewLive")}
                         </a>
                       </Button>
                     )}
@@ -280,19 +283,19 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2 text-destructive">
                     <AlertTriangle className="h-5 w-5" />
-                    Analyse d&apos;abandon
+                    {t("abandonment.title")}
                   </CardTitle>
-                  <CardDescription>
-                    Comprendre pourquoi ce projet a été abandonné
-                  </CardDescription>
+                  <CardDescription>{t("abandonment.subtitle")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
                     <h4 className="text-sm font-medium mb-2">
-                      Raison principale
+                      {t("abandonment.mainReason")}
                     </h4>
                     <Badge variant="destructive">
-                      {abandonmentReasonLabels[project.abandonment.mainReason]}
+                      {t(
+                        `abandonment.reasons.${abandonmentReasonKeys[project.abandonment.mainReason]}`,
+                      )}
                     </Badge>
                   </div>
 
@@ -300,13 +303,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     project.abandonment.secondaryReasons.length > 0 && (
                       <div>
                         <h4 className="text-sm font-medium mb-2">
-                          Raisons secondaires
+                          {t("abandonment.secondaryReasons")}
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {project.abandonment.secondaryReasons.map(
                             (reason) => (
                               <Badge key={reason} variant="outline">
-                                {abandonmentReasonLabels[reason]}
+                                {t(
+                                  `abandonment.reasons.${abandonmentReasonKeys[reason]}`,
+                                )}
                               </Badge>
                             ),
                           )}
@@ -317,7 +322,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   {project.abandonment.retrospective && (
                     <div>
                       <h4 className="text-sm font-medium mb-2">
-                        Rétrospective
+                        {t("abandonment.retrospective")}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {project.abandonment.retrospective}
@@ -329,7 +334,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <div>
                       <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                         <Lightbulb className="h-4 w-4" />
-                        Leçons apprises
+                        {t("abandonment.lessonsLearned")}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {project.abandonment.lessonsLearned}
@@ -340,11 +345,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <Separator />
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                      Prêt à reprendre ce projet ?
+                      {t("abandonment.readyToRevive")}
                     </p>
                     <Button variant="outline" size="sm" className="gap-2">
                       <RotateCcw className="h-4 w-4" />
-                      Relancer le projet
+                      {t("actions.revive")}
                     </Button>
                   </div>
                 </CardContent>
@@ -355,31 +360,31 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Actions</CardTitle>
+                <CardTitle className="text-lg">{t("actionsTitle")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {project.status === "ACTIVE" && (
                   <>
                     <Button className="w-full gap-2" variant="default">
                       <CheckCircle2 className="h-4 w-4" />
-                      Marquer comme terminé
+                      {t("actions.markCompleted")}
                     </Button>
                     <Button className="w-full gap-2" variant="outline">
                       <Pause className="h-4 w-4" />
-                      Abandonner le projet
+                      {t("actions.abandon")}
                     </Button>
                   </>
                 )}
                 {project.status === "COMPLETED" && (
                   <Button className="w-full gap-2" variant="outline">
                     <Play className="h-4 w-4" />
-                    Réactiver le projet
+                    {t("actions.reactivate")}
                   </Button>
                 )}
                 {project.status === "ABANDONED" && (
                   <Button className="w-full gap-2" variant="default">
                     <RotateCcw className="h-4 w-4" />
-                    Relancer le projet
+                    {t("actions.revive")}
                   </Button>
                 )}
               </CardContent>
@@ -389,7 +394,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <History className="h-5 w-5" />
-                  Historique
+                  {t("history")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -414,7 +419,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         <p className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(item.date), {
                             addSuffix: true,
-                            locale: fr,
+                            locale: dateLocale,
                           })}
                         </p>
                       </div>
@@ -426,41 +431,49 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Informations</CardTitle>
+                <CardTitle className="text-lg">{t("info.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Créé le</span>
+                  <span className="text-muted-foreground">
+                    {t("info.createdAt")}
+                  </span>
                   <span>
                     {format(new Date(project.createdAt), "d MMM yyyy", {
-                      locale: fr,
+                      locale: dateLocale,
                     })}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mis à jour le</span>
+                  <span className="text-muted-foreground">
+                    {t("info.updatedAt")}
+                  </span>
                   <span>
                     {format(new Date(project.updatedAt), "d MMM yyyy", {
-                      locale: fr,
+                      locale: dateLocale,
                     })}
                   </span>
                 </div>
                 {project.endDate && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Terminé le</span>
+                    <span className="text-muted-foreground">
+                      {t("info.completedAt")}
+                    </span>
                     <span>
                       {format(new Date(project.endDate), "d MMM yyyy", {
-                        locale: fr,
+                        locale: dateLocale,
                       })}
                     </span>
                   </div>
                 )}
                 {project.abandonedAt && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Abandonné le</span>
+                    <span className="text-muted-foreground">
+                      {t("info.abandonedAt")}
+                    </span>
                     <span>
                       {format(new Date(project.abandonedAt), "d MMM yyyy", {
-                        locale: fr,
+                        locale: dateLocale,
                       })}
                     </span>
                   </div>
@@ -468,7 +481,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 {project.revivals.length > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      Nombre de relances
+                      {t("info.revivals")}
                     </span>
                     <span>{project.revivals.length}</span>
                   </div>
