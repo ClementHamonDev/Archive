@@ -126,12 +126,6 @@ export default async function DashboardPage() {
               {t("welcome", { name: user.name })}
             </p>
           </div>
-          <Link href="/projects/new">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              {t("newProject")}
-            </Button>
-          </Link>
         </div>
 
         {/* Stats Grid */}

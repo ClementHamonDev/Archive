@@ -44,12 +44,6 @@ export default async function ProjectsPage() {
             <h1 className="text-3xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
-          <Link href="/projects/new">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              {t("newProject")}
-            </Button>
-          </Link>
         </div>
 
         {projects.length === 0 ? (

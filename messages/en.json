@@ -440,5 +440,44 @@
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Dec"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your account and preferences",
+    "tabs": {
+      "profile": "Profile",
+      "accounts": "Connected Accounts"
+    },
+    "information": {
+      "title": "Profile Information",
+      "description": "Update your personal information"
+    },
+    "form": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "location": "Location",
+      "locationPlaceholder": "City, Country",
+      "website": "Website",
+      "websitePlaceholder": "https://yourwebsite.com",
+      "saveChanges": "Save Changes",
+      "saving": "Saving..."
+    },
+    "stats": {
+      "title": "Your Statistics",
+      "description": "Overview of your project activity",
+      "totalProjects": "Total Projects",
+      "active": "Active",
+      "completed": "Completed",
+      "abandoned": "Abandoned"
+    },
+    "accounts": {
+      "title": "Connected Accounts",
+      "description": "Manage your connected services",
+      "connected": "Connected",
+      "connect": "Connect",
+      "note": "Note:",
+      "githubNote": "Your GitHub account is used for authentication. Disconnecting it will log you out."
+    },
+    "memberSince": "Member since"
   }
 }

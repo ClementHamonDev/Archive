@@ -1,5 +1,3 @@
-"use client";
-
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,64 +9,120 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Calendar,
   Camera,
   CheckCircle2,
-  ExternalLink,
   FolderKanban,
   Github,
-  Mail,
-  MapPin,
   Pause,
   Play,
-  Save,
   User,
 } from "lucide-react";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { db } from "@/db";
+import { projects } from "@/db/schema/schema";
+import { account, user as userTable } from "@/db/schema/auth-schema";
+import { eq, and, count } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
+import { ProfileForm } from "./profile-form";
 
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  image: "https://github.com/shadcn.png",
-};
+export default async function ProfilePage() {
+  const session = await getSession();
 
-const profileStats = [
-  { label: "Total Projects", value: 24, icon: FolderKanban },
-  { label: "Active", value: 6, icon: Play },
-  { label: "Completed", value: 15, icon: CheckCircle2 },
-  { label: "Abandoned", value: 3, icon: Pause },
-];
+  if (!session?.user) {
+    redirect("/login");
+  }
 
-const connectedAccounts = [
-  { provider: "GitHub", connected: true, username: "johndoe", icon: Github },
-];
+  // Récupérer les données complètes de l'utilisateur depuis la base de données
+  const [userData] = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.id, session.user.id))
+    .limit(1);
 
-export default function ProfilePage() {
+  if (!userData) {
+    redirect("/login");
+  }
+
+  const t = await getTranslations("profile");
+
+  // Récupérer les statistiques des projets
+  const [projectStats, githubAccount] = await Promise.all([
+    db
+      .select({
+        status: projects.status,
+        count: count(),
+      })
+      .from(projects)
+      .where(eq(projects.userId, userData.id))
+      .groupBy(projects.status),
+    db
+      .select()
+      .from(account)
+      .where(
+        and(eq(account.userId, userData.id), eq(account.providerId, "github")),
+      )
+      .limit(1)
+      .then((res) => res[0]),
+  ]);
+
+  // Calculer les stats
+  const stats = {
+    total: 0,
+    active: 0,
+    completed: 0,
+    abandoned: 0,
+  };
+
+  projectStats.forEach((stat) => {
+    stats.total += stat.count;
+    if (stat.status === "ACTIVE") stats.active = stat.count;
+    if (stat.status === "COMPLETED") stats.completed = stat.count;
+    if (stat.status === "ABANDONED") stats.abandoned = stat.count;
+  });
+
+  const profileStats = [
+    { label: t("stats.totalProjects"), value: stats.total, icon: FolderKanban },
+    { label: t("stats.active"), value: stats.active, icon: Play },
+    { label: t("stats.completed"), value: stats.completed, icon: CheckCircle2 },
+    { label: t("stats.abandoned"), value: stats.abandoned, icon: Pause },
+  ];
+
+  const connectedAccounts = [
+    {
+      provider: "GitHub",
+      connected: !!githubAccount,
+      username: githubAccount?.accountId || null,
+      icon: Github,
+    },
+  ];
+  const memberSince = new Date(userData.createdAt).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <div className="min-h-screen bg-background">
-      <Header user={mockUser} isAuthenticated={true} />
+      <Header user={userData} isAuthenticated={true} />
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="text-muted-foreground">
-            Manage your account and preferences
-          </p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("description")}</p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList>
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
-              Profile
+              {t("tabs.profile")}
             </TabsTrigger>
             <TabsTrigger value="accounts" className="gap-2">
               <Github className="h-4 w-4" />
-              Connected Accounts
+              {t("tabs.accounts")}
             </TabsTrigger>
           </TabsList>
 
@@ -77,9 +131,9 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
+                  <CardTitle>{t("information.title")}</CardTitle>
                   <CardDescription>
-                    Update your personal information
+                    {t("information.description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -87,9 +141,12 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       <Avatar className="h-24 w-24">
-                        <AvatarImage src={mockUser.image} alt={mockUser.name} />
+                        <AvatarImage
+                          src={userData.image ?? undefined}
+                          alt={userData.name}
+                        />
                         <AvatarFallback className="text-2xl">
-                          {mockUser.name.charAt(0)}
+                          {userData.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <Button
@@ -101,79 +158,26 @@ export default function ProfilePage() {
                       </Button>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">{mockUser.name}</h3>
-                      <p className="text-muted-foreground">{mockUser.email}</p>
+                      <h3 className="font-semibold text-lg">{userData.name}</h3>
+                      <p className="text-muted-foreground">{userData.email}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Member since January 2024
+                        {t("memberSince")} {memberSince}
                       </p>
                     </div>
                   </div>
 
                   <Separator />
 
-                  {/* Form Fields */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" defaultValue={mockUser.name} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className="flex items-center gap-2"
-                      >
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        defaultValue={mockUser.email}
-                        disabled
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="location"
-                        className="flex items-center gap-2"
-                      >
-                        <MapPin className="h-4 w-4" />
-                        Location
-                      </Label>
-                      <Input id="location" placeholder="City, Country" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="website"
-                        className="flex items-center gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Website
-                      </Label>
-                      <Input
-                        id="website"
-                        type="url"
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button className="gap-2">
-                      <Save className="h-4 w-4" />
-                      Save Changes
-                    </Button>
-                  </div>
+                  {/* Form */}
+                  <ProfileForm user={userData} />
                 </CardContent>
               </Card>
 
               {/* Stats Overview */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Your Statistics</CardTitle>
-                  <CardDescription>
-                    Overview of your project activity
-                  </CardDescription>
+                  <CardTitle>{t("stats.title")}</CardTitle>
+                  <CardDescription>{t("stats.description")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -198,10 +202,8 @@ export default function ProfilePage() {
           <TabsContent value="accounts">
             <Card>
               <CardHeader>
-                <CardTitle>Connected Accounts</CardTitle>
-                <CardDescription>
-                  Manage your connected services
-                </CardDescription>
+                <CardTitle>{t("accounts.title")}</CardTitle>
+                <CardDescription>{t("accounts.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {connectedAccounts.map((account) => (
@@ -215,7 +217,7 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <p className="font-medium">{account.provider}</p>
-                        {account.connected && (
+                        {account.connected && account.username && (
                           <p className="text-sm text-muted-foreground">
                             @{account.username}
                           </p>
@@ -225,11 +227,11 @@ export default function ProfilePage() {
                     {account.connected ? (
                       <Badge variant="secondary" className="gap-1">
                         <CheckCircle2 className="h-3 w-3" />
-                        Connected
+                        {t("accounts.connected")}
                       </Badge>
                     ) : (
                       <Button variant="outline" size="sm">
-                        Connect
+                        {t("accounts.connect")}
                       </Button>
                     )}
                   </div>
@@ -237,8 +239,8 @@ export default function ProfilePage() {
 
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> Your GitHub account is used for
-                    authentication. Disconnecting it will log you out.
+                    <strong>{t("accounts.note")}</strong>{" "}
+                    {t("accounts.githubNote")}
                   </p>
                 </div>
               </CardContent>

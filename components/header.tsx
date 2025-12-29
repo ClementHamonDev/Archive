@@ -38,7 +38,7 @@ interface HeaderProps {
   user?: {
     name: string;
     email: string;
-    image?: string;
+    image?: string | null;
   };
   isAuthenticated?: boolean;
 }
@@ -103,7 +103,10 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                     className="relative h-9 w-9 rounded-full"
                   >
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user?.image} alt={user?.name} />
+                      <AvatarImage
+                        src={user?.image ?? undefined}
+                        alt={user?.name}
+                      />
                       <AvatarFallback>
                         {user?.name?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
@@ -142,7 +145,10 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="p-0">
-                    <LogoutButton variant="dropdown" className="px-2 py-1.5 w-full" />
+                    <LogoutButton
+                      variant="dropdown"
+                      className="px-2 py-1.5 w-full"
+                    />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -170,7 +176,10 @@ export function Header({ user, isAuthenticated = false }: HeaderProps) {
                   {/* User Info */}
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user?.image} alt={user?.name} />
+                      <AvatarImage
+                        src={user?.image ?? undefined}
+                        alt={user?.name}
+                      />
                       <AvatarFallback>
                         {user?.name?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>

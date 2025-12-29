@@ -440,5 +440,44 @@
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Déc"
+  },
+  "profile": {
+    "title": "Profil",
+    "description": "Gérez votre compte et vos préférences",
+    "tabs": {
+      "profile": "Profil",
+      "accounts": "Comptes Connectés"
+    },
+    "information": {
+      "title": "Informations du Profil",
+      "description": "Mettez à jour vos informations personnelles"
+    },
+    "form": {
+      "fullName": "Nom Complet",
+      "email": "Email",
+      "location": "Localisation",
+      "locationPlaceholder": "Ville, Pays",
+      "website": "Site Web",
+      "websitePlaceholder": "https://votresite.com",
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    },
+    "stats": {
+      "title": "Vos Statistiques",
+      "description": "Aperçu de votre activité de projet",
+      "totalProjects": "Total des Projets",
+      "active": "Actifs",
+      "completed": "Terminés",
+      "abandoned": "Abandonnés"
+    },
+    "accounts": {
+      "title": "Comptes Connectés",
+      "description": "Gérez vos services connectés",
+      "connected": "Connecté",
+      "connect": "Connecter",
+      "note": "Note :",
+      "githubNote": "Votre compte GitHub est utilisé pour l'authentification. Le déconnecter vous déconnectera."
+    },
+    "memberSince": "Membre depuis"
   }
 }
