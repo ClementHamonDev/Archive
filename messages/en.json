@@ -509,8 +509,6 @@
       "saving": "Saving..."
     },
     "appearance": {
-      "title": "Appearance",
-      "description": "Customize how Archive looks",
       "theme": {
         "label": "Theme",
         "description": "Select your preferred theme",

@@ -489,8 +489,6 @@
       "danger": "Zone de Danger"
     },
     "general": {
-      "title": "Paramètres Généraux",
-      "description": "Configurez le comportement général de l'application",
       "language": {
         "label": "Langue",
         "description": "Sélectionnez votre langue préférée"
@@ -509,8 +507,6 @@
       "saving": "Enregistrement..."
     },
     "appearance": {
-      "title": "Apparence",
-      "description": "Personnalisez l'apparence d'Archive",
       "theme": {
         "label": "Thème",
         "description": "Sélectionnez votre thème préféré",

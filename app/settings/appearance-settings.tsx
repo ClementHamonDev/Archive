@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import { Moon, Sun, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { useTheme } from "next-themes";
 
 export function AppearanceSettings() {
@@ -28,10 +27,6 @@ export function AppearanceSettings() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">

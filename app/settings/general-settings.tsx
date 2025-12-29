@@ -20,39 +20,28 @@ import {
 import { Save } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 export function GeneralSettings() {
   const t = useTranslations("settings.general");
   const tFormats = useTranslations("settings.dateFormats");
   const locale = useLocale();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
 
   const [language, setLanguage] = useState(locale);
   const [dateFormat, setDateFormat] = useState("dmy");
   const [defaultVisibility, setDefaultVisibility] = useState("private");
 
-  const handleSave = () => {
-    startTransition(() => {
-      // Changer la langue si différente
-      if (language !== locale) {
-        document.cookie = `NEXT_LOCALE=${language}; path=/; max-age=31536000`;
-        router.refresh();
-      }
-
-      // Sauvegarder les autres préférences (à implémenter avec une action serveur si nécessaire)
-      toast.success("Settings saved successfully");
-    });
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage);
+    if (newLanguage !== locale) {
+      document.cookie = `NEXT_LOCALE=${newLanguage}; path=/; max-age=31536000`;
+      router.refresh();
+    }
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
@@ -61,7 +50,7 @@ export function GeneralSettings() {
               {t("language.description")}
             </p>
           </div>
-          <Select value={language} onValueChange={setLanguage}>
+          <Select value={language} onValueChange={handleLanguageChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -118,13 +107,6 @@ export function GeneralSettings() {
               </SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="gap-2" disabled={isPending}>
-            <Save className="h-4 w-4" />
-            {isPending ? t("saving") : t("saveChanges")}
-          </Button>
         </div>
       </CardContent>
     </Card>
