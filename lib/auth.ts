@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { schema } from "@/db/index";
 
 export const auth = betterAuth({
+  baseURL: process.env.AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,
