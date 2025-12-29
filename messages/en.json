@@ -479,5 +479,82 @@
       "githubNote": "Your GitHub account is used for authentication. Disconnecting it will log you out."
     },
     "memberSince": "Member since"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your application preferences",
+    "tabs": {
+      "general": "General",
+      "appearance": "Appearance",
+      "danger": "Danger Zone"
+    },
+    "general": {
+      "title": "General Settings",
+      "description": "Configure general application behavior",
+      "language": {
+        "label": "Language",
+        "description": "Select your preferred language"
+      },
+      "dateFormat": {
+        "label": "Date Format",
+        "description": "How dates should be displayed"
+      },
+      "defaultVisibility": {
+        "label": "Default Project Visibility",
+        "description": "New projects will use this setting",
+        "public": "Public",
+        "private": "Private"
+      },
+      "saveChanges": "Save Changes",
+      "saving": "Saving..."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize how Archive looks",
+      "theme": {
+        "label": "Theme",
+        "description": "Select your preferred theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "compactMode": {
+        "label": "Compact Mode",
+        "description": "Use a more condensed layout"
+      },
+      "showThumbnails": {
+        "label": "Show Project Thumbnails",
+        "description": "Display thumbnails in project lists"
+      }
+    },
+    "danger": {
+      "title": "Danger Zone",
+      "description": "Irreversible and destructive actions",
+      "export": {
+        "label": "Export Data",
+        "description": "Download all your data as JSON",
+        "button": "Export",
+        "exporting": "Exporting..."
+      },
+      "deleteProjects": {
+        "label": "Delete All Projects",
+        "description": "Permanently delete all your projects",
+        "button": "Delete All",
+        "deleting": "Deleting...",
+        "confirm": "Are you sure you want to delete all your projects? This action cannot be undone."
+      },
+      "deleteAccount": {
+        "label": "Delete Account",
+        "description": "Permanently delete your account and all data",
+        "button": "Delete Account",
+        "deleting": "Deleting...",
+        "confirm": "Are you absolutely sure? This will permanently delete your account and all associated data. This action cannot be undone."
+      }
+    },
+    "dateFormats": {
+      "mdy": "MM/DD/YYYY",
+      "dmy": "DD/MM/YYYY",
+      "ymd": "YYYY-MM-DD"
+    }
   }
 }

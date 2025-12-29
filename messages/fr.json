@@ -479,5 +479,82 @@
       "githubNote": "Votre compte GitHub est utilisé pour l'authentification. Le déconnecter vous déconnectera."
     },
     "memberSince": "Membre depuis"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Gérez vos préférences d'application",
+    "tabs": {
+      "general": "Général",
+      "appearance": "Apparence",
+      "danger": "Zone de Danger"
+    },
+    "general": {
+      "title": "Paramètres Généraux",
+      "description": "Configurez le comportement général de l'application",
+      "language": {
+        "label": "Langue",
+        "description": "Sélectionnez votre langue préférée"
+      },
+      "dateFormat": {
+        "label": "Format de Date",
+        "description": "Comment les dates doivent être affichées"
+      },
+      "defaultVisibility": {
+        "label": "Visibilité par Défaut des Projets",
+        "description": "Les nouveaux projets utiliseront ce paramètre",
+        "public": "Public",
+        "private": "Privé"
+      },
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    },
+    "appearance": {
+      "title": "Apparence",
+      "description": "Personnalisez l'apparence d'Archive",
+      "theme": {
+        "label": "Thème",
+        "description": "Sélectionnez votre thème préféré",
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      },
+      "compactMode": {
+        "label": "Mode Compact",
+        "description": "Utiliser une disposition plus condensée"
+      },
+      "showThumbnails": {
+        "label": "Afficher les Miniatures des Projets",
+        "description": "Afficher les miniatures dans les listes de projets"
+      }
+    },
+    "danger": {
+      "title": "Zone de Danger",
+      "description": "Actions irréversibles et destructrices",
+      "export": {
+        "label": "Exporter les Données",
+        "description": "Télécharger toutes vos données en JSON",
+        "button": "Exporter",
+        "exporting": "Exportation..."
+      },
+      "deleteProjects": {
+        "label": "Supprimer Tous les Projets",
+        "description": "Supprimer définitivement tous vos projets",
+        "button": "Tout Supprimer",
+        "deleting": "Suppression...",
+        "confirm": "Êtes-vous sûr de vouloir supprimer tous vos projets ? Cette action ne peut pas être annulée."
+      },
+      "deleteAccount": {
+        "label": "Supprimer le Compte",
+        "description": "Supprimer définitivement votre compte et toutes les données",
+        "button": "Supprimer le Compte",
+        "deleting": "Suppression...",
+        "confirm": "Êtes-vous absolument sûr ? Cela supprimera définitivement votre compte et toutes les données associées. Cette action ne peut pas être annulée."
+      }
+    },
+    "dateFormats": {
+      "mdy": "MM/JJ/AAAA",
+      "dmy": "JJ/MM/AAAA",
+      "ymd": "AAAA-MM-JJ"
+    }
   }
 }
