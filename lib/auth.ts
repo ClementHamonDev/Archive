@@ -9,6 +9,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  secret: process.env.BETTER_AUTH_SECRET as string,
   pages: {
     signIn: "/login",
   },
